@@ -1,0 +1,2747 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="twitter:card" content="summary_large_image" /><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Ethereum Transactions Exploratory Data Analysis | Scratching The Surface</title>
+<meta name="generator" content="Jekyll v4.1.1" />
+<meta property="og:title" content="Ethereum Transactions Exploratory Data Analysis" />
+<meta name="author" content="Corey" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="My first attempt at analyzing Ethereum transactions. Only scratching the surface!" />
+<meta property="og:description" content="My first attempt at analyzing Ethereum transactions. Only scratching the surface!" />
+<link rel="canonical" href="https://interuniverse.github.io/scratching-the-surface/fastpages/jupyter/2022/08/22/ethereum-txn-eda.html" />
+<meta property="og:url" content="https://interuniverse.github.io/scratching-the-surface/fastpages/jupyter/2022/08/22/ethereum-txn-eda.html" />
+<meta property="og:site_name" content="Scratching The Surface" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2022-08-22T00:00:00-05:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Ethereum Transactions Exploratory Data Analysis" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Corey"},"dateModified":"2022-08-22T00:00:00-05:00","datePublished":"2022-08-22T00:00:00-05:00","description":"My first attempt at analyzing Ethereum transactions. Only scratching the surface!","headline":"Ethereum Transactions Exploratory Data Analysis","mainEntityOfPage":{"@type":"WebPage","@id":"https://interuniverse.github.io/scratching-the-surface/fastpages/jupyter/2022/08/22/ethereum-txn-eda.html"},"url":"https://interuniverse.github.io/scratching-the-surface/fastpages/jupyter/2022/08/22/ethereum-txn-eda.html"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/scratching-the-surface/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://interuniverse.github.io/scratching-the-surface/feed.xml" title="Scratching The Surface" /><link rel="shortcut icon" type="image/x-icon" href="/scratching-the-surface/images/favicon.ico"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/15.2.0/primer.css" integrity="sha512-xTz2ys4coGAOz8vuV1NcQBkgVmKhsSEtjbqyMJbBHRplFuvKIUo6xhLHpAyPt9mfR6twHJgn9OgVLuqOvjeBhg==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
+
+<script>
+function wrap_img(fn) {
+    if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading") {
+        var elements = document.querySelectorAll(".post img");
+        Array.prototype.forEach.call(elements, function(el, i) {
+            if (el.getAttribute("title") && (el.className != "emoji")) {
+                const caption = document.createElement('figcaption');
+                var node = document.createTextNode(el.getAttribute("title"));
+                caption.appendChild(node);
+                const wrapper = document.createElement('figure');
+                wrapper.className = 'image';
+                el.parentNode.insertBefore(wrapper, el);
+                el.parentNode.removeChild(el);
+                wrapper.appendChild(el);
+                wrapper.appendChild(caption);
+            }
+        });
+    } else { document.addEventListener('DOMContentLoaded', fn); }
+}
+window.onload = wrap_img;
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+    // add link icon to anchor tags
+    var elem = document.querySelectorAll(".anchor-link")
+    elem.forEach(e => (e.innerHTML = '<i class="fas fa-link fa-xs"></i>'));
+    });
+</script>
+</head>
+<body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/scratching-the-surface/">Scratching The Surface</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/scratching-the-surface/about/">About Me</a><a class="page-link" href="/scratching-the-surface/search/">Search</a><a class="page-link" href="/scratching-the-surface/categories/">Tags</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Ethereum Transactions Exploratory Data Analysis</h1><p class="page-description">My first attempt at analyzing Ethereum transactions. Only scratching the surface!</p><p class="post-meta post-meta-title"><time class="dt-published" datetime="2022-08-22T00:00:00-05:00" itemprop="datePublished">
+        Aug 22, 2022
+      </time>• 
+          <span itemprop="author" itemscope itemtype="http://schema.org/Person">
+            <span class="p-author h-card" itemprop="name">Corey</span></span>
+       • <span class="read-time" title="Estimated read time">
+    
+    
+      15 min read
+    
+</span></p>
+
+    
+      <p class="category-tags"><i class="fas fa-tags category-tags-icon"></i></i> 
+      
+        <a class="category-tags-link" href="/scratching-the-surface/categories/#fastpages">fastpages</a>
+        &nbsp;
+      
+        <a class="category-tags-link" href="/scratching-the-surface/categories/#jupyter">jupyter</a>
+        
+      
+      </p>
+    
+
+    
+      
+        <div class="pb-5 d-flex flex-justify-center">
+          <div class="px-2">
+
+    <a href="https://github.com/InterUniverse/scratching-the-surface/tree/master/_notebooks/2022-08-22-ethereum-txn-eda.ipynb" role="button" target="_blank">
+<img class="notebook-badge-image" src="/scratching-the-surface/assets/badges/github.svg" alt="View On GitHub">
+    </a>
+</div>
+
+          <div class="px-2">
+    <a href="https://mybinder.org/v2/gh/InterUniverse/scratching-the-surface/master?filepath=_notebooks%2F2022-08-22-ethereum-txn-eda.ipynb" target="_blank">
+        <img class="notebook-badge-image" src="/scratching-the-surface/assets/badges/binder.svg" alt="Open In Binder"/>
+    </a>
+</div>
+
+          <div class="px-2">
+    <a href="https://colab.research.google.com/github/InterUniverse/scratching-the-surface/blob/master/_notebooks/2022-08-22-ethereum-txn-eda.ipynb" target="_blank">
+        <img class="notebook-badge-image" src="/scratching-the-surface/assets/badges/colab.svg" alt="Open In Colab"/>
+    </a>
+</div>
+          <div class="px-2">
+  <a href="https://deepnote.com/launch?url=https%3A%2F%2Fgithub.com%2FInterUniverse%2Fscratching-the-surface%2Fblob%2Fmaster%2F_notebooks%2F2022-08-22-ethereum-txn-eda.ipynb" target="_blank">
+      <img class="notebook-badge-image" src="/scratching-the-surface/assets/badges/deepnote.svg" alt="Launch in Deepnote"/>
+  </a>
+</div>
+
+        </div>
+      </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <ul id="toc" class="section-nav">
+<li class="toc-entry toc-h2"><a href="#Findings:">Findings: </a></li>
+<li class="toc-entry toc-h2"><a href="#The-details-(for-the-technically-minded)">The details (for the technically minded) </a></li>
+<li class="toc-entry toc-h2"><a href="#Load-the-libraries">Load the libraries </a></li>
+<li class="toc-entry toc-h2"><a href="#Read-the-data-files">Read the data files </a>
+<ul>
+<li class="toc-entry toc-h3"><a href="#Dataset-1:-Ethereum-transactions">Dataset 1: Ethereum transactions </a></li>
+<li class="toc-entry toc-h3"><a href="#Format-data-types-and-add-new-column">Format data types and add new column </a>
+<ul>
+<li class="toc-entry toc-h4"><a href="#Convert-type-to-categorical-data-type">Convert type to categorical data type </a></li>
+<li class="toc-entry toc-h4"><a href="#Add-eth_value-column">Add eth_value column </a></li>
+</ul>
+</li>
+<li class="toc-entry toc-h3"><a href="#Dataset-2:-Aggregated-transaction-counts">Dataset 2: Aggregated transaction counts </a>
+<ul>
+<li class="toc-entry toc-h4"><a href="#Convert-block_timestamp-to-datetime-and-create-block_date-field">Convert block_timestamp to datetime and create block_date field </a></li>
+</ul>
+</li>
+<li class="toc-entry toc-h3"><a href="#Dataset-3:-Address-names-(labels)">Dataset 3: Address names (labels) </a></li>
+</ul>
+</li>
+<li class="toc-entry toc-h2"><a href="#Inspect-dataset-1:-Ethereum-transactions">Inspect dataset 1: Ethereum transactions </a>
+<ul>
+<li class="toc-entry toc-h4"><a href="#Total-number-of-rows-and-columns-in-the-dataset">Total number of rows and columns in the dataset </a></li>
+<li class="toc-entry toc-h4"><a href="#Data-fields">Data fields </a></li>
+<li class="toc-entry toc-h4"><a href="#The-number-of-transactions-in-dataset-1-by-date">The number of transactions in dataset 1 by date </a></li>
+<li class="toc-entry toc-h4"><a href="#Sample-rows-from-dataset-1">Sample rows from dataset 1 </a></li>
+</ul>
+</li>
+<li class="toc-entry toc-h2"><a href="#Analysis:-Year-Over-Year-(YOY)-transactions-1-to-7-July-2021-vs-1-to-7-July-2022">Analysis: Year-Over-Year (YOY) transactions 1 to 7 July 2021 vs 1 to 7 July 2022 </a>
+<ul>
+<li class="toc-entry toc-h3"><a href="#Aggregate-dataset-2-(the-transaction-counts-data)">Aggregate dataset 2 (the transaction counts data) </a></li>
+<li class="toc-entry toc-h3"><a href="#Visualize-the-transaction-counts">Visualize the transaction counts </a></li>
+<li class="toc-entry toc-h3"><a href="#Calculate-the-Year-Over-Year-(YOY)">Calculate the Year-Over-Year (YOY) </a></li>
+<li class="toc-entry toc-h3"><a href="#Visualize-the-Year-Over-Year-percentages">Visualize the Year-Over-Year percentages </a></li>
+</ul>
+</li>
+<li class="toc-entry toc-h2"><a href="#Analysis:-Where-did-the-drop-in-transaction-come-from?">Analysis: Where did the drop in transaction come from? </a>
+<ul>
+<li class="toc-entry toc-h4"><a href="#Identify-Top-50-sender-addresses-with-the-most-transactions-on-6-July-2022-and-2021">Identify Top 50 sender addresses with the most transactions on 6 July 2022 and 2021 </a></li>
+<li class="toc-entry toc-h4"><a href="#Filter-dataset-1-(Ethereum-transactions)-to-6-July-2022-and-6-July-2021-and-add-address-names-(labels)">Filter dataset 1 (Ethereum transactions) to 6 July 2022 and 6 July 2021 and add address names (labels) </a></li>
+<li class="toc-entry toc-h4"><a href="#Example-Top-10-from-addresses-sorted-by-total-transactions-for-6-July-2021">Example Top 10 from addresses sorted by total transactions for 6 July 2021 </a></li>
+<li class="toc-entry toc-h4"><a href="#Aggregate-the-address-labels-by-category-(miners,-exchanges,-no-label)-for-6-July-2021-and-6-July-2022">Aggregate the address labels by category (miners, exchanges, no label) for 6 July 2021 and 6 July 2022 </a></li>
+<li class="toc-entry toc-h4"><a href="#Create-Year-Over-Year-calculations-and-pivot-the-aggregated-category-dataset">Create Year-Over-Year calculations and pivot the aggregated category dataset </a></li>
+<li class="toc-entry toc-h3"><a href="#Visualize-the-Year-Over-Year-(6-July-2022-vs-6-July-2021)-by-address-categories">Visualize the Year-Over-Year (6 July 2022 vs 6 July 2021) by address categories </a>
+<ul>
+<li class="toc-entry toc-h4"><a href="#Aggregate-The-top-50-addresses-by-their-address-names-(labels)-for-6-July-2021-and-6-July-2022">Aggregate The top 50 addresses by their address names (labels) for 6 July 2021 and 6 July 2022 </a></li>
+<li class="toc-entry toc-h4"><a href="#Create-Year-Over-Year-calculations-and-pivot-the-dataset">Create Year-Over-Year calculations and pivot the dataset </a></li>
+</ul>
+</li>
+<li class="toc-entry toc-h3"><a href="#Visualize-the-Year-Over-Year-(6-July-2022-vs-6-July-2021)-by-address-names-(labels)">Visualize the Year-Over-Year (6 July 2022 vs 6 July 2021) by address names (labels) </a></li>
+<li class="toc-entry toc-h3"><a href="#What-does-the-above-charts-tell-us?">What does the above charts tell us? </a></li>
+<li class="toc-entry toc-h3"><a href="#If-we-exclude-FTX-and-include-the-total-Ethereum-(ETH)-transacted-in-the-chart">If we exclude FTX and include the total Ethereum (ETH) transacted in the chart </a></li>
+<li class="toc-entry toc-h3"><a href="#What-does-the-above-chart-tell-us?">What does the above chart tell us? </a></li>
+<li class="toc-entry toc-h3"><a href="#What-does-the-above-table-mean?">What does the above table mean? </a></li>
+</ul>
+</li>
+</ul><!--
+#################################################
+### THIS FILE WAS AUTOGENERATED! DO NOT EDIT! ###
+#################################################
+# file to edit: _notebooks/2022-08-22-ethereum-txn-eda.ipynb
+-->
+
+<div class="container" id="notebook-container">
+        
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Findings:">
+<a class="anchor" href="#Findings:" aria-hidden="true"><span class="octicon octicon-link"></span></a>Findings:<a class="anchor-link" href="#Findings:"> </a>
+</h2>
+<ul>
+<li>
+<p>Looking at the number of Ethereum transactions from 1 to 7 July 2022, there was a <strong>14% drop</strong> on 6 July 2022 compared to 6 July 2021,<strong>Year-Over-Year</strong>. (See chart 2).</p>
+</li>
+<li>
+<p>Focussing on 6 July 2022, of the top 50 addresses with the most transactions, we can see 3 categories of addresses: <strong>miners</strong>, <strong>crypto exchanges</strong> and <strong>no label</strong> (See chart 4).<br>
+"No label" are user(s) or organization(s) where based on their addresses, the name/label unidentified in <a href="https://etherscan.io/">etherscan</a>.</p>
+</li>
+<li>
+<p>Although there was a <strong>14% drop</strong> in number of transactions on 6 July 2022, there was an <strong>increase</strong> of almost 9% in the number of ETH per transaction. (See table)<br>
+ETH is the crypto currency used for payment on the Ethereum network. <a href="https://ethereum.org/en/developers/docs/intro-to-ether/#what-is-ether">More explanation</a>.</p>
+<ul>
+<li>
+<p>This could be due to the <strong>lower price of ETH on 6 July 2022</strong>.<br>
+The closing price of ETH on 6 July 2022 was about <strong>USD\$1,186 (AUD$1,744)</strong> while on 6 July 2021, about <strong>USD\$2,323 (AUD\\$3,097)</strong>.<br>
+(Historical prices from <a href="https://messari.io/asset/ethereum/historical">Messari</a>.)</p>
+</li>
+<li>
+<p>Also, this seems to be the case when we examine a longer period, see <em>"ETH Per Transaction 2022 vs 2021 Last 3 Months"</em>, the 3rd chart in this <a href="https://dune.com/interuniverse/ethereum-transactions-overview">Dune</a> dashboard.</p>
+<ul>
+<li>On 13 June 2022, ETH per transaction was almost <strong>7</strong> compared to 13 June 2021, which was at <strong>1</strong>.<br>
+The closing price of ETH on 13 June 2022, was at <strong>USD\$1,208 (AUD\\$1,726)</strong> while on 13 June 2021, was at <strong>USD\$2,509 (AUD\\$3,258)</strong>.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">alt</span><span class="o">.</span><span class="n">Chart</span><span class="p">(</span><span class="n">df_txn_daily_pct</span><span class="o">.</span><span class="n">reset_index</span><span class="p">())</span><span class="o">.</span><span class="n">mark_bar</span><span class="p">()</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span>
+    <span class="n">x</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">X</span><span class="p">(</span><span class="s1">'monthdate(block_date):O'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'Month-Day'</span><span class="p">),</span>
+    <span class="n">y</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">Y</span><span class="p">(</span><span class="s1">'pct_change:Q'</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">Axis</span><span class="p">(</span><span class="nb">format</span><span class="o">=</span><span class="s1">'%'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'Year-Over-Year 2022 vs 2021 % Difference'</span><span class="p">)),</span>
+    <span class="n">color</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span>
+        <span class="n">alt</span><span class="o">.</span><span class="n">datum</span><span class="o">.</span><span class="n">pct_change</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">alt</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">"steelblue"</span><span class="p">),</span>
+        <span class="n">alt</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">"orange"</span><span class="p">)),</span>
+    <span class="n">tooltip</span><span class="o">=</span><span class="p">[</span><span class="n">alt</span><span class="o">.</span><span class="n">Tooltip</span><span class="p">(</span><span class="s1">'monthdate(block_date)'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'Month-Day'</span><span class="p">),</span> <span class="n">alt</span><span class="o">.</span><span class="n">Tooltip</span><span class="p">(</span><span class="s1">'pct_change'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'2022 vs 2021 % Difference'</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">'.2%'</span><span class="p">)]</span>
+<span class="p">)</span><span class="o">.</span><span class="n">properties</span><span class="p">(</span>
+    <span class="n">height</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
+    <span class="n">width</span><span class="o">=</span><span class="mi">800</span><span class="p">,</span>
+    <span class="n">title</span><span class="o">=</span><span class="s1">'Chart 2 - 14</span><span class="si">% d</span><span class="s1">ecline in Ethereum transactions on 6 July 2022'</span>
+<span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+
+<div id="altair-viz-2371aa51bfda4b6b977a91a6f043e62b"></div>
+<script type="text/javascript">
+  var VEGA_DEBUG = (typeof VEGA_DEBUG == "undefined") ? {} : VEGA_DEBUG;
+  (function(spec, embedOpt){
+    let outputDiv = document.currentScript.previousElementSibling;
+    if (outputDiv.id !== "altair-viz-2371aa51bfda4b6b977a91a6f043e62b") {
+      outputDiv = document.getElementById("altair-viz-2371aa51bfda4b6b977a91a6f043e62b");
+    }
+    const paths = {
+      "vega": "https://cdn.jsdelivr.net/npm//vega@5?noext",
+      "vega-lib": "https://cdn.jsdelivr.net/npm//vega-lib?noext",
+      "vega-lite": "https://cdn.jsdelivr.net/npm//vega-lite@4.17.0?noext",
+      "vega-embed": "https://cdn.jsdelivr.net/npm//vega-embed@6?noext",
+    };
+
+    function maybeLoadScript(lib, version) {
+      var key = `${lib.replace("-", "")}_version`;
+      return (VEGA_DEBUG[key] == version) ?
+        Promise.resolve(paths[lib]) :
+        new Promise(function(resolve, reject) {
+          var s = document.createElement('script');
+          document.getElementsByTagName("head")[0].appendChild(s);
+          s.async = true;
+          s.onload = () => {
+            VEGA_DEBUG[key] = version;
+            return resolve(paths[lib]);
+          };
+          s.onerror = () => reject(`Error loading script: ${paths[lib]}`);
+          s.src = paths[lib];
+        });
+    }
+
+    function showError(err) {
+      outputDiv.innerHTML = `<div class="error" style="color:red;">${err}</div>`;
+      throw err;
+    }
+
+    function displayChart(vegaEmbed) {
+      vegaEmbed(outputDiv, spec, embedOpt)
+        .catch(err => showError(`Javascript Error: ${err.message}<br>This usually means there's a typo in your chart specification. See the javascript console for the full traceback.`));
+    }
+
+    if(typeof define === "function" && define.amd) {
+      requirejs.config({paths});
+      require(["vega-embed"], displayChart, err => showError(`Error loading script: ${err.message}`));
+    } else {
+      maybeLoadScript("vega", "5")
+        .then(() => maybeLoadScript("vega-lite", "4.17.0"))
+        .then(() => maybeLoadScript("vega-embed", "6"))
+        .catch(showError)
+        .then(() => displayChart(vegaEmbed));
+    }
+  })({"config": {"view": {"continuousWidth": 400, "continuousHeight": 300}}, "data": {"name": "data-00e13823add68b1f38846a03ff078806"}, "mark": "bar", "encoding": {"color": {"condition": {"value": "steelblue", "test": "(datum.pct_change > 0)"}, "value": "orange"}, "tooltip": [{"field": "block_date", "timeUnit": "monthdate", "title": "Month-Day", "type": "temporal"}, {"field": "pct_change", "format": ".2%", "title": "2022 vs 2021 % Difference", "type": "quantitative"}], "x": {"field": "block_date", "timeUnit": "monthdate", "title": "Month-Day", "type": "ordinal"}, "y": {"axis": {"format": "%", "title": "Year-Over-Year 2022 vs 2021 % Difference"}, "field": "pct_change", "type": "quantitative"}}, "height": 500, "title": "Chart 2 - 14% decline in Ethereum transactions on 6 July 2022", "width": 800, "$schema": "https://vega.github.io/schema/vega-lite/v4.17.0.json", "datasets": {"data-00e13823add68b1f38846a03ff078806": [{"block_date": "2022-07-01T00:00:00", "pct_change": -0.027308514413514784}, {"block_date": "2022-07-02T00:00:00", "pct_change": 0.006608134573035551}, {"block_date": "2022-07-03T00:00:00", "pct_change": 0.030741806772658142}, {"block_date": "2022-07-04T00:00:00", "pct_change": 0.04220952229308006}, {"block_date": "2022-07-05T00:00:00", "pct_change": 0.03014997016277632}, {"block_date": "2022-07-06T00:00:00", "pct_change": -0.1431208458478952}, {"block_date": "2022-07-07T00:00:00", "pct_change": -0.0748648893591608}]}}, {"mode": "vega-lite"});
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">alt</span><span class="o">.</span><span class="n">Chart</span><span class="p">(</span><span class="n">df_agg_label_pivot</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="s1">'total_transactions_pct_diff'</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">())</span><span class="o">.</span><span class="n">mark_bar</span><span class="p">()</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span>
+    <span class="n">x</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">X</span><span class="p">(</span><span class="s1">'total_transactions_pct_diff:Q'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'6 July 2022 vs 6 July 2021 Transactions % Difference'</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">Axis</span><span class="p">(</span><span class="nb">format</span><span class="o">=</span><span class="s1">'%'</span><span class="p">)),</span>
+    <span class="n">y</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">Y</span><span class="p">(</span><span class="s1">'address_label'</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="s1">'x'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'Addresses'</span><span class="p">),</span>
+    <span class="n">size</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">Size</span><span class="p">(</span><span class="s1">'total_transactions_2021:Q'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'6 July 2021 Transaction Volume'</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">Scale</span><span class="p">(</span><span class="nb">range</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">30</span><span class="p">])),</span>
+    <span class="n">color</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span>
+        <span class="n">alt</span><span class="o">.</span><span class="n">datum</span><span class="o">.</span><span class="n">total_transactions_pct_diff</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">alt</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">"steelblue"</span><span class="p">),</span>
+        <span class="n">alt</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">"orange"</span><span class="p">)),</span>
+    <span class="n">tooltip</span><span class="o">=</span><span class="p">[</span><span class="n">alt</span><span class="o">.</span><span class="n">Tooltip</span><span class="p">(</span><span class="s1">'address_label'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'Address Name'</span><span class="p">),</span>
+             <span class="n">alt</span><span class="o">.</span><span class="n">Tooltip</span><span class="p">(</span><span class="s1">'total_transactions_pct_diff'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'6 July 2022 vs 2021 % Diff'</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">'.2%'</span><span class="p">),</span> 
+             <span class="n">alt</span><span class="o">.</span><span class="n">Tooltip</span><span class="p">(</span><span class="s1">'total_transactions_2022'</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">','</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'6 July 2022 Transactions'</span><span class="p">),</span>
+             <span class="n">alt</span><span class="o">.</span><span class="n">Tooltip</span><span class="p">(</span><span class="s1">'total_transactions_2021'</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">','</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'6 July 2021 Transactions'</span><span class="p">)]</span>
+<span class="p">)</span><span class="o">.</span><span class="n">properties</span><span class="p">(</span>
+    <span class="n">height</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
+    <span class="n">width</span><span class="o">=</span><span class="mi">800</span><span class="p">,</span>
+    <span class="n">title</span><span class="o">=</span><span class="s1">'Chart 4 - Out of the top 50 addresses only FTX (a crypto exchange), showed a 177</span><span class="si">% i</span><span class="s1">ncrease in transactions for 6 July 2022 vs 2021'</span>
+<span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+
+<div id="altair-viz-e8718f10fb1042b1a8d8b0ac5566e107"></div>
+<script type="text/javascript">
+  var VEGA_DEBUG = (typeof VEGA_DEBUG == "undefined") ? {} : VEGA_DEBUG;
+  (function(spec, embedOpt){
+    let outputDiv = document.currentScript.previousElementSibling;
+    if (outputDiv.id !== "altair-viz-e8718f10fb1042b1a8d8b0ac5566e107") {
+      outputDiv = document.getElementById("altair-viz-e8718f10fb1042b1a8d8b0ac5566e107");
+    }
+    const paths = {
+      "vega": "https://cdn.jsdelivr.net/npm//vega@5?noext",
+      "vega-lib": "https://cdn.jsdelivr.net/npm//vega-lib?noext",
+      "vega-lite": "https://cdn.jsdelivr.net/npm//vega-lite@4.17.0?noext",
+      "vega-embed": "https://cdn.jsdelivr.net/npm//vega-embed@6?noext",
+    };
+
+    function maybeLoadScript(lib, version) {
+      var key = `${lib.replace("-", "")}_version`;
+      return (VEGA_DEBUG[key] == version) ?
+        Promise.resolve(paths[lib]) :
+        new Promise(function(resolve, reject) {
+          var s = document.createElement('script');
+          document.getElementsByTagName("head")[0].appendChild(s);
+          s.async = true;
+          s.onload = () => {
+            VEGA_DEBUG[key] = version;
+            return resolve(paths[lib]);
+          };
+          s.onerror = () => reject(`Error loading script: ${paths[lib]}`);
+          s.src = paths[lib];
+        });
+    }
+
+    function showError(err) {
+      outputDiv.innerHTML = `<div class="error" style="color:red;">${err}</div>`;
+      throw err;
+    }
+
+    function displayChart(vegaEmbed) {
+      vegaEmbed(outputDiv, spec, embedOpt)
+        .catch(err => showError(`Javascript Error: ${err.message}<br>This usually means there's a typo in your chart specification. See the javascript console for the full traceback.`));
+    }
+
+    if(typeof define === "function" && define.amd) {
+      requirejs.config({paths});
+      require(["vega-embed"], displayChart, err => showError(`Error loading script: ${err.message}`));
+    } else {
+      maybeLoadScript("vega", "5")
+        .then(() => maybeLoadScript("vega-lite", "4.17.0"))
+        .then(() => maybeLoadScript("vega-embed", "6"))
+        .catch(showError)
+        .then(() => displayChart(vegaEmbed));
+    }
+  })({"config": {"view": {"continuousWidth": 400, "continuousHeight": 300}}, "data": {"name": "data-b90014e139eeb7fecef619972ca703b8"}, "mark": "bar", "encoding": {"color": {"condition": {"value": "steelblue", "test": "(datum.total_transactions_pct_diff > 0)"}, "value": "orange"}, "size": {"field": "total_transactions_2021", "scale": {"range": [0, 30]}, "title": "6 July 2021 Transaction Volume", "type": "quantitative"}, "tooltip": [{"field": "address_label", "title": "Address Name", "type": "nominal"}, {"field": "total_transactions_pct_diff", "format": ".2%", "title": "6 July 2022 vs 2021 % Diff", "type": "quantitative"}, {"field": "total_transactions_2022", "format": ",", "title": "6 July 2022 Transactions", "type": "quantitative"}, {"field": "total_transactions_2021", "format": ",", "title": "6 July 2021 Transactions", "type": "quantitative"}], "x": {"axis": {"format": "%"}, "field": "total_transactions_pct_diff", "title": "6 July 2022 vs 6 July 2021 Transactions % Difference", "type": "quantitative"}, "y": {"field": "address_label", "sort": "x", "title": "Addresses", "type": "nominal"}}, "height": 500, "title": "Chart 4 - Out of the top 50 addresses only FTX (a crypto exchange), showed a 177% increase in transactions for 6 July 2022 vs 2021", "width": 800, "$schema": "https://vega.github.io/schema/vega-lite/v4.17.0.json", "datasets": {"data-b90014e139eeb7fecef619972ca703b8": [{"address_label": "2Miners: PPLNS", "total_transactions_2021": 9007.0, "total_transactions_2022": 4661.0, "total_value_eth_2021": 805.207741546, "total_value_eth_2022": 961.9954971029999, "total_transactions_pct_diff": -0.4825136005329188, "total_value_eth_pct_diff": 0.19471714871489842, "value_per_transaction_2021": 0.08939799506450538, "value_per_transaction_2022": 0.20639251171486803, "value_per_txn_pct_diff": 1.308692846701371}, {"address_label": "BeePool", "total_transactions_2021": 6347.0, "total_transactions_2022": 0.0, "total_value_eth_2021": 867.67257, "total_value_eth_2022": 0.0, "total_transactions_pct_diff": -1.0, "total_value_eth_pct_diff": -1.0, "value_per_transaction_2021": 0.1367059350874429, "value_per_transaction_2022": null, "value_per_txn_pct_diff": null}, {"address_label": "Binance", "total_transactions_2021": 90505.0, "total_transactions_2022": 26033.0, "total_value_eth_2021": 325242.78704620997, "total_value_eth_2022": 165070.85631193, "total_transactions_pct_diff": -0.7123584332357329, "total_value_eth_pct_diff": -0.4924688174914791, "value_per_transaction_2021": 3.5936444068969666, "value_per_transaction_2022": 6.340831110971843, "value_per_txn_pct_diff": 0.7644570227378207}, {"address_label": "BlockFi", "total_transactions_2021": 6986.0, "total_transactions_2022": 0.0, "total_value_eth_2021": 0.0, "total_value_eth_2022": 0.0, "total_transactions_pct_diff": -1.0, "total_value_eth_pct_diff": null, "value_per_transaction_2021": 0.0, "value_per_transaction_2022": null, "value_per_txn_pct_diff": null}, {"address_label": "Coinbase", "total_transactions_2021": 65251.0, "total_transactions_2022": 45881.0, "total_value_eth_2021": 97064.37545876014, "total_value_eth_2022": 93370.42798035343, "total_transactions_pct_diff": -0.29685368806608325, "total_value_eth_pct_diff": -0.03805667590140904, "value_per_transaction_2021": 1.4875538376233337, "value_per_transaction_2022": 2.0350565153408477, "value_per_txn_pct_diff": 0.3680557058642393}, {"address_label": "Crypto.com", "total_transactions_2021": 17182.0, "total_transactions_2022": 7354.0, "total_value_eth_2021": 4324.638217418021, "total_value_eth_2022": 4609.642168927356, "total_transactions_pct_diff": -0.5719939471539983, "total_value_eth_pct_diff": 0.06590238007920424, "value_per_transaction_2021": 0.2516958571422431, "value_per_transaction_2022": 0.6268210727396458, "value_per_txn_pct_diff": 1.490390902164929}, {"address_label": "Ethermine", "total_transactions_2021": 20714.0, "total_transactions_2022": 18967.0, "total_value_eth_2021": 5344.927707614215, "total_value_eth_2022": 3983.203973743854, "total_transactions_pct_diff": -0.08433909433233566, "total_value_eth_pct_diff": -0.25476934551060304, "value_per_transaction_2021": 0.2580345518786432, "value_per_transaction_2022": 0.2100070635178918, "value_per_txn_pct_diff": -0.18612812900862719}, {"address_label": "F2Pool Old", "total_transactions_2021": 5685.0, "total_transactions_2022": 3298.0, "total_value_eth_2021": 1252.032787717207, "total_value_eth_2022": 1830.9623723343698, "total_transactions_pct_diff": -0.41987686895338605, "total_value_eth_pct_diff": 0.46239171233902554, "value_per_transaction_2021": 0.2202344393521912, "value_per_transaction_2022": 0.5551735513445633, "value_per_txn_pct_diff": 1.5208298619306726}, {"address_label": "FTX Exchange", "total_transactions_2021": 4796.0, "total_transactions_2022": 13262.0, "total_value_eth_2021": 53.04, "total_value_eth_2022": 49302.17859626, "total_transactions_pct_diff": 1.7652210175145955, "total_value_eth_pct_diff": 928.5282540773001, "value_per_transaction_2021": 0.011059216013344454, "value_per_transaction_2022": 3.7175522995219423, "value_per_txn_pct_diff": 335.1497139612978}, {"address_label": "Gate.io", "total_transactions_2021": 5300.0, "total_transactions_2022": 0.0, "total_value_eth_2021": 3874.3286134572, "total_value_eth_2022": 0.0, "total_transactions_pct_diff": -1.0, "total_value_eth_pct_diff": -1.0, "value_per_transaction_2021": 0.7310053987655094, "value_per_transaction_2022": null, "value_per_txn_pct_diff": null}, {"address_label": "Gemini", "total_transactions_2021": 3640.0, "total_transactions_2022": 0.0, "total_value_eth_2021": 42380.076903193665, "total_value_eth_2022": 0.0, "total_transactions_pct_diff": -1.0, "total_value_eth_pct_diff": -1.0, "value_per_transaction_2021": 11.64287827010815, "value_per_transaction_2022": null, "value_per_txn_pct_diff": null}, {"address_label": "Hiveon Pool", "total_transactions_2021": 7210.0, "total_transactions_2022": 0.0, "total_value_eth_2021": 981.845327532, "total_value_eth_2022": 0.0, "total_transactions_pct_diff": -1.0, "total_value_eth_pct_diff": -1.0, "value_per_transaction_2021": 0.1361782701153953, "value_per_transaction_2022": null, "value_per_txn_pct_diff": null}, {"address_label": "KuCoin", "total_transactions_2021": 3953.0, "total_transactions_2022": 0.0, "total_value_eth_2021": 0.0, "total_value_eth_2022": 0.0, "total_transactions_pct_diff": -1.0, "total_value_eth_pct_diff": null, "value_per_transaction_2021": 0.0, "value_per_transaction_2022": null, "value_per_txn_pct_diff": null}, {"address_label": "Nanopool", "total_transactions_2021": 5049.0, "total_transactions_2022": 0.0, "total_value_eth_2021": 860.9277666027583, "total_value_eth_2022": 0.0, "total_transactions_pct_diff": -1.0, "total_value_eth_pct_diff": -1.0, "value_per_transaction_2021": 0.1705145111116574, "value_per_transaction_2022": null, "value_per_txn_pct_diff": null}, {"address_label": "No Label", "total_transactions_2021": 33066.0, "total_transactions_2022": 8829.0, "total_value_eth_2021": 1888.5941294435654, "total_value_eth_2022": 2042.9934579588828, "total_transactions_pct_diff": -0.7329885683179096, "total_value_eth_pct_diff": 0.08175357855253318, "value_per_transaction_2021": 0.05711589334795758, "value_per_transaction_2022": 0.2313957931769037, "value_per_txn_pct_diff": 3.0513380709500577}, {"address_label": "Spark Pool: Distributor", "total_transactions_2021": 7588.0, "total_transactions_2022": 0.0, "total_value_eth_2021": 3219.760188046487, "total_value_eth_2022": 0.0, "total_transactions_pct_diff": -1.0, "total_value_eth_pct_diff": -1.0, "value_per_transaction_2021": 0.4243226394368064, "value_per_transaction_2022": null, "value_per_txn_pct_diff": null}]}}, {"mode": "vega-lite"});
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df_overall_agg</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">'block_date.isin(["2021-07-06","2022-07-06"])'</span><span class="p">)</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">'block_date'</span><span class="p">])</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">total_transactions</span><span class="o">=</span><span class="p">(</span><span class="s1">'hash'</span><span class="p">,</span><span class="s1">'count'</span><span class="p">),</span><span class="n">total_value_eth</span><span class="o">=</span><span class="p">(</span><span class="s1">'eth_value'</span><span class="p">,</span><span class="s1">'sum'</span><span class="p">))</span>
+<span class="n">df_overall_agg</span><span class="p">[</span><span class="s1">'eth_per_transaction'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_overall_agg</span><span class="p">[</span><span class="s1">'total_value_eth'</span><span class="p">]</span><span class="o">/</span><span class="n">df_overall_agg</span><span class="p">[</span><span class="s1">'total_transactions'</span><span class="p">]</span>
+<span class="n">df_overall_agg</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">'block_date'</span><span class="p">])</span><span class="o">.</span><span class="n">agg</span><span class="p">({</span><span class="s1">'total_transactions'</span><span class="p">:</span><span class="s1">'sum'</span><span class="p">,</span> <span class="s1">'total_value_eth'</span><span class="p">:</span><span class="s1">'sum'</span><span class="p">,</span> <span class="s1">'eth_per_transaction'</span><span class="p">:</span><span class="s1">'sum'</span><span class="p">})</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>total_transactions</th>
+      <th>total_value_eth</th>
+      <th>eth_per_transaction</th>
+    </tr>
+    <tr>
+      <th>block_date</th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2021-07-06</th>
+      <td>1355421</td>
+      <td>2024807.8928</td>
+      <td>1.4939</td>
+    </tr>
+    <tr>
+      <th>2022-07-06</th>
+      <td>1161432</td>
+      <td>1882904.6394</td>
+      <td>1.6212</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="The-details-(for-the-technically-minded)">
+<a class="anchor" href="#The-details-(for-the-technically-minded)" aria-hidden="true"><span class="octicon octicon-link"></span></a>The details (for the technically minded)<a class="anchor-link" href="#The-details-(for-the-technically-minded)"> </a>
+</h2>
+<h2 id="Load-the-libraries">
+<a class="anchor" href="#Load-the-libraries" aria-hidden="true"><span class="octicon octicon-link"></span></a>Load the libraries<a class="anchor-link" href="#Load-the-libraries"> </a>
+</h2>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">json</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">altair</span> <span class="k">as</span> <span class="nn">alt</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s1">'display.max_columns'</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="s1">'display.max_rows'</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="s1">'display.max_colwidth'</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="s1">'display.float_format'</span><span class="p">,</span> <span class="s1">'</span><span class="si">{:.4f}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Read-the-data-files">
+<a class="anchor" href="#Read-the-data-files" aria-hidden="true"><span class="octicon octicon-link"></span></a>Read the data files<a class="anchor-link" href="#Read-the-data-files"> </a>
+</h2>
+<ul>
+<li>Details of the data extraction using the Alchemy API into JSON format are not shown here. (If interested in the steps, please let me know).</li>
+<li>In below file directory, the JSON format files were already formatted into Pandas dataframe and saved as separate parquet files based on block numbers.</li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Dataset-1:-Ethereum-transactions">
+<a class="anchor" href="#Dataset-1:-Ethereum-transactions" aria-hidden="true"><span class="octicon octicon-link"></span></a>Dataset 1: Ethereum transactions<a class="anchor-link" href="#Dataset-1:-Ethereum-transactions"> </a>
+</h3>
+<ul>
+<li>Due to memory and storage limitation of the Jupyter free instance on the cloud, only raw transactions from 1 July 2022 to 7 July 2022 and 6 July 2021 were extracted from the API of a remote node provider (Alchemy).</li>
+</ul>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">PATH</span> <span class="o">=</span> <span class="s1">'../data/'</span>
+<span class="n">file_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">PATH</span><span class="p">)</span>
+<span class="n">file_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">PATH</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span> <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">file_dir</span> <span class="k">if</span> <span class="n">file</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">'df_'</span><span class="p">)]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">file_list</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>['../data/df_eth_txns_15063949_15052950.parquet',
+ '../data/df_eth_txns_15074950_15063950.parquet',
+ '../data/df_eth_txns_15081957_15074951.parquet',
+ '../data/df_eth_txns_15098961_15081958.parquet',
+ '../data/df_eth_txns_12777014_12770590.parquet',
+ '../data/df_missing_eth_txns_20220704_20220705.parquet']</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>In order to work within the memory (RAM) limit, the files are read one by one and appended to a single dataframe.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">pd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="n">file</span><span class="p">)</span> <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">file_list</span><span class="p">])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Format-data-types-and-add-new-column">
+<a class="anchor" href="#Format-data-types-and-add-new-column" aria-hidden="true"><span class="octicon octicon-link"></span></a>Format data types and add new column<a class="anchor-link" href="#Format-data-types-and-add-new-column"> </a>
+</h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="Convert-type-to-categorical-data-type">
+<a class="anchor" href="#Convert-type-to-categorical-data-type" aria-hidden="true"><span class="octicon octicon-link"></span></a>Convert <code>type</code> to categorical data type<a class="anchor-link" href="#Convert-type-to-categorical-data-type"> </a>
+</h4>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="p">[</span><span class="s1">'type'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">'type'</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">'category'</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="Add-eth_value-column">
+<a class="anchor" href="#Add-eth_value-column" aria-hidden="true"><span class="octicon octicon-link"></span></a>Add <code>eth_value</code> column<a class="anchor-link" href="#Add-eth_value-column"> </a>
+</h4>
+<p>Convert the <code>value</code> field which by default is in Wei (the smallest unit of Ether) to Ether.<br>
+1 ETH = 10^18 Wei<br>
+1 ETH = 10^9 Gwei<br>
+Reference: <a href="https://gwei.io/">https://gwei.io/</a></p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="p">[</span><span class="s1">'eth_value'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">'value'</span><span class="p">]</span><span class="o">.</span><span class="n">div</span><span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="mi">18</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Dataset-2:-Aggregated-transaction-counts">
+<a class="anchor" href="#Dataset-2:-Aggregated-transaction-counts" aria-hidden="true"><span class="octicon octicon-link"></span></a>Dataset 2: Aggregated transaction counts<a class="anchor-link" href="#Dataset-2:-Aggregated-transaction-counts"> </a>
+</h3>
+<ul>
+<li>This dataset is a total count of transactions per day rather than raw transactions (a dataset where each row is a transaction like above).</li>
+<li>The data is also extracted using Alchemy's API.</li>
+<li>Due to memory (RAM) limitation on this Jupyter instance, this dataset allows the analysis of transaction counts for selected dates in July 2021 and compare it to July 2022.</li>
+</ul>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">block_txn</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s1">'../data/raw/block_txn_counts.json'</span><span class="p">))</span>
+<span class="n">df_txn_raw</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">block_txn</span><span class="p">)</span>
+<span class="n">df_txn</span> <span class="o">=</span> <span class="n">df_txn_raw</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="Convert-block_timestamp-to-datetime-and-create-block_date-field">
+<a class="anchor" href="#Convert-block_timestamp-to-datetime-and-create-block_date-field" aria-hidden="true"><span class="octicon octicon-link"></span></a>Convert <code>block_timestamp</code> to datetime and create <code>block_date</code> field<a class="anchor-link" href="#Convert-block_timestamp-to-datetime-and-create-block_date-field"> </a>
+</h4>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df_txn</span><span class="p">[</span><span class="s1">'block_timestamp'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_txn</span><span class="p">[</span><span class="s1">'block_timestamp'</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">'datetime64[s]'</span><span class="p">)</span>
+<span class="n">df_txn</span><span class="p">[</span><span class="s1">'block_date'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_txn</span><span class="p">[</span><span class="s1">'block_timestamp'</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">'datetime64[D]'</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Dataset-3:-Address-names-(labels)">
+<a class="anchor" href="#Dataset-3:-Address-names-(labels)" aria-hidden="true"><span class="octicon octicon-link"></span></a>Dataset 3: Address names (labels)<a class="anchor-link" href="#Dataset-3:-Address-names-(labels)"> </a>
+</h3>
+<ul>
+<li>The dataset contains corresponding name (label) of the address of a sender. </li>
+<li>The name (label) of addresses were manually sourced from <a href="https://etherscan.io/">https://etherscan.io/</a> and saved as a Pandas dataframe.</li>
+<li>The names are not an exhaustive list and selected based on the need of the analysis below.</li>
+</ul>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df_labels</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">PATH</span><span class="si">}</span><span class="s1">address_labels.parquet'</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Inspect-dataset-1:-Ethereum-transactions">
+<a class="anchor" href="#Inspect-dataset-1:-Ethereum-transactions" aria-hidden="true"><span class="octicon octicon-link"></span></a>Inspect dataset 1: Ethereum transactions<a class="anchor-link" href="#Inspect-dataset-1:-Ethereum-transactions"> </a>
+</h2>
+<ul>
+<li>Due to memory and storage limitation of the Jupyter free instance on the cloud, only raw transactions from 1 July 2022 to 7 July 2022 and 6 July 2021 were extracted from the API of a remote node provider (Alchemy).</li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="Total-number-of-rows-and-columns-in-the-dataset">
+<a class="anchor" href="#Total-number-of-rows-and-columns-in-the-dataset" aria-hidden="true"><span class="octicon octicon-link"></span></a>Total number of rows and columns in the dataset<a class="anchor-link" href="#Total-number-of-rows-and-columns-in-the-dataset"> </a>
+</h4>
+<ul>
+<li>Rows: 9,699,876</li>
+<li>Columns: 18</li>
+</ul>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">shape</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>(9699876, 18)</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">info</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>&lt;class 'pandas.core.frame.DataFrame'&gt;
+Int64Index: 9699876 entries, 0 to 2858
+Data columns (total 18 columns):
+ #   Column                Dtype         
+---  ------                -----         
+ 0   hash                  object        
+ 1   blockHash             object        
+ 2   blockNumber           int64         
+ 3   chainId               float64       
+ 4   from                  object        
+ 5   gas                   int64         
+ 6   gasPrice              int64         
+ 7   input                 object        
+ 8   maxFeePerGas          float64       
+ 9   maxPriorityFeePerGas  float64       
+ 10  nonce                 int64         
+ 11  to                    object        
+ 12  transactionIndex      int64         
+ 13  type                  category      
+ 14  value                 float64       
+ 15  block_timestamp       datetime64[ns]
+ 16  block_date            datetime64[ns]
+ 17  eth_value             float64       
+dtypes: category(1), datetime64[ns](2), float64(5), int64(5), object(5)
+memory usage: 1.3+ GB
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="Data-fields">
+<a class="anchor" href="#Data-fields" aria-hidden="true"><span class="octicon octicon-link"></span></a>Data fields<a class="anchor-link" href="#Data-fields"> </a>
+</h4>
+<ul>
+<li>
+<code>hash</code> - Hash of the transaction</li>
+<li>
+<code>blockHash</code> - Hash of the block</li>
+<li>
+<code>blockNumber</code> - Block number</li>
+<li>
+<code>from</code> - Address of the sender</li>
+<li>
+<code>gas</code> - Gas provided by the sender</li>
+<li>
+<code>gasPrice</code> - Gas price provided by the sender in Wei</li>
+<li>
+<code>input</code> - The data sent along with the transaction. Commonly used as part of contract interaction or as a message sent to the recipient.</li>
+<li>
+<code>nonce</code> - The number of transactions made by the sender prior to this one</li>
+<li>
+<code>r</code> <em>(excluded to reduce memory usage)</em> - The Elliptic Curve Digital Signature Algorithm (ECDSA) signature r. The standardised R field of the signature. See: <a href="https://openethereum.github.io/JSONRPC">https://openethereum.github.io/JSONRPC</a>
+</li>
+<li>
+<code>s</code> <em>(excluded to reduce memory usage)</em> - The Elliptic Curve Digital Signature Algorithm (ECDSA) signature s. The standardised R field of the signature. See: <a href="https://openethereum.github.io/JSONRPC">https://openethereum.github.io/JSONRPC</a>
+</li>
+<li>
+<code>to</code> - Address of the receiver</li>
+<li>
+<code>transactionIndex</code> - Integer of the transactions index position in the block</li>
+<li>
+<code>type</code> - Overtime, Ethereum Improvement Proposals (EIPs) have changed what a valid transaction looks like, whilst maintaining a high level of backwards compatibility with other transaction types. Today, the main types of transactions are legacy transactions and typed transactions (i.e. Type 1, Type 2).<br>
+See <a href="https://mycelium.xyz/research/the-journey-of-an-ethereum-transaction/">https://mycelium.xyz/research/the-journey-of-an-ethereum-transaction/</a>.<br>
+Also see <a href="https://docs.dune.com/data-tables/data-tables/raw-data/ethereum-data#ethereum.transactions">https://docs.dune.com/data-tables/data-tables/raw-data/ethereum-data#ethereum.transactions</a>. <ul>
+<li>0: 'legacy' </li>
+<li>1: 'accessList/Type 1' </li>
+<li>2: 'DynamicFee/Type 2'    </li>
+</ul>
+</li>
+<li>
+<code>v</code> <em>(excluded to reduce memory usage)</em> - The Elliptic Curve Digital Signature Algorithm (ECDSA) recovery id. The standardised V field of the signature. See: <a href="https://openethereum.github.io/JSONRPC">https://openethereum.github.io/JSONRPC</a>
+</li>
+<li>
+<code>value</code> - The amount of ether transferred in Wei. 1 ETH = 10^18 Wei. 1 ETH = 10^9 Gwei.</li>
+<li>
+<code>accessList</code> <em>(excluded to reduce memory usage)</em> - Contains addresses and storage keys that will be accessed. These are fields from legacy transactions, EIP-2930. See: <a href="https://openethereum.github.io/JSONRPC">https://openethereum.github.io/JSONRPC</a>
+</li>
+<li>
+<code>chainId</code> - Value used in replay-protected transaction signing as introduced by EIP-155</li>
+<li>
+<code>maxFeePerGas</code> - The maximum fee per gas the transaction sender is willing to pay total (introduced by EIP1559). For detailed explanation, refer to <a href="https://docs.alchemy.com/alchemy/guides/eip-1559/maxpriorityfeepergas-vs-maxfeepergas">https://docs.alchemy.com/alchemy/guides/eip-1559/maxpriorityfeepergas-vs-maxfeepergas</a>
+</li>
+<li>
+<code>maxPriorityFeePerGas</code> - The maximum fee per gas the transaction sender is willing to pay total (introduced by EIP1559) Refer to <a href="https://docs.alchemy.com/alchemy/guides/eip-1559/maxpriorityfeepergas-vs-maxfeepergas">https://docs.alchemy.com/alchemy/guides/eip-1559/maxpriorityfeepergas-vs-maxfeepergas</a>
+</li>
+<li>
+<code>block_timestamp</code> - Timestamp of the block</li>
+</ul>
+<p>References:<br>
+<a href="https://docs.dune.com/data-tables/data-tables/raw-data/ethereum-data#ethereum.transactions">https://docs.dune.com/data-tables/data-tables/raw-data/ethereum-data#ethereum.transactions</a><br>
+The Google "bigquery-public-data.crypto_ethereum.transactions" column description<br>
+<a href="https://ethereum.org/en/developers/docs/apis/json-rpc/">https://ethereum.org/en/developers/docs/apis/json-rpc/</a><br>
+<a href="https://docs.alchemy.com/alchemy/apis/ethereum/eth-gettransactionbyhash">https://docs.alchemy.com/alchemy/apis/ethereum/eth-gettransactionbyhash</a></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="The-number-of-transactions-in-dataset-1-by-date">
+<a class="anchor" href="#The-number-of-transactions-in-dataset-1-by-date" aria-hidden="true"><span class="octicon octicon-link"></span></a>The number of transactions in dataset 1 by date<a class="anchor-link" href="#The-number-of-transactions-in-dataset-1-by-date"> </a>
+</h4>
+<ul>
+<li>Raw transactions for 30 June and 8 July 2022 are incomplete due to storage limitation and the focus of this analysis is the first 7 days of July 2022 and 2021.</li>
+<li>The total number of transactions for below dates (except 30 June and 8 July 2022) matches those in <a href="https://dune.com/interuniverse/ethereum-transactions-overview">Dune</a>, (see first line chart in dashboard).</li>
+</ul>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">'block_date'</span><span class="p">])</span><span class="o">.</span><span class="n">size</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>block_date
+2021-07-06    1355421
+2022-06-30        511
+2022-07-01    1178620
+2022-07-02    1189382
+2022-07-03    1157052
+2022-07-04    1151999
+2022-07-05    1182504
+2022-07-06    1161432
+2022-07-07    1194330
+2022-07-08      76276
+dtype: int64</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="Sample-rows-from-dataset-1">
+<a class="anchor" href="#Sample-rows-from-dataset-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>Sample rows from dataset 1<a class="anchor-link" href="#Sample-rows-from-dataset-1"> </a>
+</h4>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>hash</th>
+      <th>blockHash</th>
+      <th>blockNumber</th>
+      <th>chainId</th>
+      <th>from</th>
+      <th>gas</th>
+      <th>gasPrice</th>
+      <th>input</th>
+      <th>maxFeePerGas</th>
+      <th>maxPriorityFeePerGas</th>
+      <th>nonce</th>
+      <th>to</th>
+      <th>transactionIndex</th>
+      <th>type</th>
+      <th>value</th>
+      <th>block_timestamp</th>
+      <th>block_date</th>
+      <th>eth_value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2827047</th>
+      <td>0xc64161491c954b87be2338756e2bab1f60db57e870b362629f34b481a55a0a1f</td>
+      <td>0xc91f8306e09ebd8254a357afd00e2094873c1cace4df3e214976385eb89fdfe5</td>
+      <td>15097502</td>
+      <td>1.0000</td>
+      <td>0x8198d5b73c1be63ba1bba4aded68d3a3b8b6c75e</td>
+      <td>141881</td>
+      <td>96071669503</td>
+      <td>0xfb0f3ee100000000000000000000000000000000000000000000000000000000000000200000000000000000000000...</td>
+      <td>207394960926.0000</td>
+      <td>2500000000.0000</td>
+      <td>2</td>
+      <td>0x00000000006c3852cbef3e08e8df289169ede581</td>
+      <td>98</td>
+      <td>2</td>
+      <td>19800000000000000.0000</td>
+      <td>2022-07-07 20:14:49</td>
+      <td>2022-07-07</td>
+      <td>0.0198</td>
+    </tr>
+    <tr>
+      <th>2407174</th>
+      <td>0x38466099a0f8c66d375a2caeedfa1b8526b648f8328a8c5d2c8a983726159c22</td>
+      <td>0xece49fff8ffa8128c510dc4c665249e392aefff93d72fe14e5a3556000b778c0</td>
+      <td>15095272</td>
+      <td>1.0000</td>
+      <td>0x2faf487a4414fe77e2327f0bf4ae2a264a776ad2</td>
+      <td>67946</td>
+      <td>20620365837</td>
+      <td>0xa9059cbb0000000000000000000000005f64d9c81f5a30f4b29301401f96138792dc5f580000000000000000000000...</td>
+      <td>1000000000000.0000</td>
+      <td>5340000000.0000</td>
+      <td>4228227</td>
+      <td>0xdf574c24545e5ffecb9a659c229253d4111d87e1</td>
+      <td>105</td>
+      <td>2</td>
+      <td>0.0000</td>
+      <td>2022-07-07 11:49:11</td>
+      <td>2022-07-07</td>
+      <td>0.0000</td>
+    </tr>
+    <tr>
+      <th>64688</th>
+      <td>0xe47bb7491bfe8231c9238124f5638cd90ca49a8ce7d8b5d5a16562d587add38a</td>
+      <td>0x088510b70288abe812d289211b2753be15a77046321510dbe9832f9bcfb16182</td>
+      <td>15075330</td>
+      <td>1.0000</td>
+      <td>0xbc2144d81f7776747d417515799d7645cf4f3e02</td>
+      <td>111653</td>
+      <td>14120288109</td>
+      <td>0xa0712d680000000000000000000000000000000000000000000000000000000000000003</td>
+      <td>18514769947.0000</td>
+      <td>1500000000.0000</td>
+      <td>14</td>
+      <td>0x36036ee347c6308b905fbe2206f68dcb98d92d55</td>
+      <td>45</td>
+      <td>2</td>
+      <td>0.0000</td>
+      <td>2022-07-04 09:55:30</td>
+      <td>2022-07-04</td>
+      <td>0.0000</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Analysis:-Year-Over-Year-(YOY)-transactions-1-to-7-July-2021-vs-1-to-7-July-2022">
+<a class="anchor" href="#Analysis:-Year-Over-Year-(YOY)-transactions-1-to-7-July-2021-vs-1-to-7-July-2022" aria-hidden="true"><span class="octicon octicon-link"></span></a>Analysis: Year-Over-Year (YOY) transactions 1 to 7 July 2021 vs 1 to 7 July 2022<a class="anchor-link" href="#Analysis:-Year-Over-Year-(YOY)-transactions-1-to-7-July-2021-vs-1-to-7-July-2022"> </a>
+</h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Aggregate-dataset-2-(the-transaction-counts-data)">
+<a class="anchor" href="#Aggregate-dataset-2-(the-transaction-counts-data)" aria-hidden="true"><span class="octicon octicon-link"></span></a>Aggregate dataset 2 (the transaction counts data)<a class="anchor-link" href="#Aggregate-dataset-2-(the-transaction-counts-data)"> </a>
+</h3>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df_txn_daily</span> <span class="o">=</span> <span class="n">df_txn</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">'block_date.between("2021-07-01","2021-07-07", inclusive="both") or block_date.between("2022-07-01","2022-07-07", inclusive="both")'</span><span class="p">)</span>
+<span class="n">df_txn_daily</span> <span class="o">=</span> <span class="n">df_txn_daily</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">'block_date'</span><span class="p">])</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">transactions</span><span class="o">=</span><span class="p">(</span><span class="s1">'block_transactions'</span><span class="p">,</span><span class="s1">'sum'</span><span class="p">))</span>
+<span class="n">df_txn_daily</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">df_txn_daily</span><span class="p">[</span><span class="s1">'block_year'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_txn_daily</span><span class="p">[</span><span class="s1">'block_date'</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">year</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Examine the first 5 rows</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df_txn_daily</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>block_date</th>
+      <th>transactions</th>
+      <th>block_year</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>2021-07-01</td>
+      <td>1211710</td>
+      <td>2021</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2021-07-02</td>
+      <td>1181574</td>
+      <td>2021</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>2021-07-03</td>
+      <td>1122543</td>
+      <td>2021</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>2021-07-04</td>
+      <td>1105343</td>
+      <td>2021</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>2021-07-05</td>
+      <td>1147895</td>
+      <td>2021</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Visualize-the-transaction-counts">
+<a class="anchor" href="#Visualize-the-transaction-counts" aria-hidden="true"><span class="octicon octicon-link"></span></a>Visualize the transaction counts<a class="anchor-link" href="#Visualize-the-transaction-counts"> </a>
+</h3>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">alt</span><span class="o">.</span><span class="n">Chart</span><span class="p">(</span><span class="n">df_txn_daily</span><span class="p">)</span><span class="o">.</span><span class="n">mark_line</span><span class="p">()</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span>
+    <span class="n">x</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">X</span><span class="p">(</span><span class="s1">'monthdate(block_date):O'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'Month-Day'</span><span class="p">),</span>
+    <span class="n">y</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">Y</span><span class="p">(</span><span class="s1">'transactions:Q'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'Transactions'</span><span class="p">),</span>
+    <span class="n">color</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">Color</span><span class="p">(</span><span class="s1">'block_year:N'</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">Scale</span><span class="p">(</span><span class="nb">range</span><span class="o">=</span><span class="p">[</span><span class="s1">'saddlebrown'</span><span class="p">,</span><span class="s1">'steelblue'</span><span class="p">]),</span> <span class="n">legend</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">Legend</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s1">'year'</span><span class="p">)),</span>
+    <span class="n">tooltip</span><span class="o">=</span><span class="p">[</span><span class="n">alt</span><span class="o">.</span><span class="n">Tooltip</span><span class="p">(</span><span class="s1">'block_year'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'Year'</span><span class="p">),</span> <span class="n">alt</span><span class="o">.</span><span class="n">Tooltip</span><span class="p">(</span><span class="s1">'transactions'</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">','</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'Transactions'</span><span class="p">),</span> <span class="n">alt</span><span class="o">.</span><span class="n">Tooltip</span><span class="p">(</span><span class="s1">'monthdate(block_date)'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'Month-Day'</span><span class="p">)],</span>
+<span class="p">)</span><span class="o">.</span><span class="n">properties</span><span class="p">(</span>
+    <span class="n">title</span><span class="o">=</span><span class="s1">'Chart 1 - A decline in Ethereum transactions on 6 and 7 July 2022 compared to 2021'</span><span class="p">,</span>
+    <span class="n">height</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
+    <span class="n">width</span><span class="o">=</span><span class="mi">800</span>
+<span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+
+<div id="altair-viz-057e0f865da848bea878154c34b69da7"></div>
+<script type="text/javascript">
+  var VEGA_DEBUG = (typeof VEGA_DEBUG == "undefined") ? {} : VEGA_DEBUG;
+  (function(spec, embedOpt){
+    let outputDiv = document.currentScript.previousElementSibling;
+    if (outputDiv.id !== "altair-viz-057e0f865da848bea878154c34b69da7") {
+      outputDiv = document.getElementById("altair-viz-057e0f865da848bea878154c34b69da7");
+    }
+    const paths = {
+      "vega": "https://cdn.jsdelivr.net/npm//vega@5?noext",
+      "vega-lib": "https://cdn.jsdelivr.net/npm//vega-lib?noext",
+      "vega-lite": "https://cdn.jsdelivr.net/npm//vega-lite@4.17.0?noext",
+      "vega-embed": "https://cdn.jsdelivr.net/npm//vega-embed@6?noext",
+    };
+
+    function maybeLoadScript(lib, version) {
+      var key = `${lib.replace("-", "")}_version`;
+      return (VEGA_DEBUG[key] == version) ?
+        Promise.resolve(paths[lib]) :
+        new Promise(function(resolve, reject) {
+          var s = document.createElement('script');
+          document.getElementsByTagName("head")[0].appendChild(s);
+          s.async = true;
+          s.onload = () => {
+            VEGA_DEBUG[key] = version;
+            return resolve(paths[lib]);
+          };
+          s.onerror = () => reject(`Error loading script: ${paths[lib]}`);
+          s.src = paths[lib];
+        });
+    }
+
+    function showError(err) {
+      outputDiv.innerHTML = `<div class="error" style="color:red;">${err}</div>`;
+      throw err;
+    }
+
+    function displayChart(vegaEmbed) {
+      vegaEmbed(outputDiv, spec, embedOpt)
+        .catch(err => showError(`Javascript Error: ${err.message}<br>This usually means there's a typo in your chart specification. See the javascript console for the full traceback.`));
+    }
+
+    if(typeof define === "function" && define.amd) {
+      requirejs.config({paths});
+      require(["vega-embed"], displayChart, err => showError(`Error loading script: ${err.message}`));
+    } else {
+      maybeLoadScript("vega", "5")
+        .then(() => maybeLoadScript("vega-lite", "4.17.0"))
+        .then(() => maybeLoadScript("vega-embed", "6"))
+        .catch(showError)
+        .then(() => displayChart(vegaEmbed));
+    }
+  })({"config": {"view": {"continuousWidth": 400, "continuousHeight": 300}}, "data": {"name": "data-026db85f04635e99c03945e9fb5e3c19"}, "mark": "line", "encoding": {"color": {"field": "block_year", "legend": {"title": "year"}, "scale": {"range": ["saddlebrown", "steelblue"]}, "type": "nominal"}, "tooltip": [{"field": "block_year", "title": "Year", "type": "quantitative"}, {"field": "transactions", "format": ",", "title": "Transactions", "type": "quantitative"}, {"field": "block_date", "timeUnit": "monthdate", "title": "Month-Day", "type": "temporal"}], "x": {"field": "block_date", "timeUnit": "monthdate", "title": "Month-Day", "type": "ordinal"}, "y": {"field": "transactions", "title": "Transactions", "type": "quantitative"}}, "height": 500, "title": "Chart 1 - A decline in Ethereum transactions on 6 and 7 July 2022 compared to 2021", "width": 800, "$schema": "https://vega.github.io/schema/vega-lite/v4.17.0.json", "datasets": {"data-026db85f04635e99c03945e9fb5e3c19": [{"block_date": "2021-07-01T00:00:00", "transactions": 1211710, "block_year": 2021}, {"block_date": "2021-07-02T00:00:00", "transactions": 1181574, "block_year": 2021}, {"block_date": "2021-07-03T00:00:00", "transactions": 1122543, "block_year": 2021}, {"block_date": "2021-07-04T00:00:00", "transactions": 1105343, "block_year": 2021}, {"block_date": "2021-07-05T00:00:00", "transactions": 1147895, "block_year": 2021}, {"block_date": "2021-07-06T00:00:00", "transactions": 1355421, "block_year": 2021}, {"block_date": "2021-07-07T00:00:00", "transactions": 1290979, "block_year": 2021}, {"block_date": "2022-07-01T00:00:00", "transactions": 1178620, "block_year": 2022}, {"block_date": "2022-07-02T00:00:00", "transactions": 1189382, "block_year": 2022}, {"block_date": "2022-07-03T00:00:00", "transactions": 1157052, "block_year": 2022}, {"block_date": "2022-07-04T00:00:00", "transactions": 1151999, "block_year": 2022}, {"block_date": "2022-07-05T00:00:00", "transactions": 1182504, "block_year": 2022}, {"block_date": "2022-07-06T00:00:00", "transactions": 1161432, "block_year": 2022}, {"block_date": "2022-07-07T00:00:00", "transactions": 1194330, "block_year": 2022}]}}, {"mode": "vega-lite"});
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Calculate-the-Year-Over-Year-(YOY)">
+<a class="anchor" href="#Calculate-the-Year-Over-Year-(YOY)" aria-hidden="true"><span class="octicon octicon-link"></span></a>Calculate the Year-Over-Year (YOY)<a class="anchor-link" href="#Calculate-the-Year-Over-Year-(YOY)"> </a>
+</h3>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df_txn_daily_pct</span> <span class="o">=</span> <span class="n">df_txn_daily</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">'block_date'</span><span class="p">)</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="s1">'block_year'</span><span class="p">)</span><span class="o">.</span><span class="n">pct_change</span><span class="p">(</span><span class="n">periods</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+<span class="n">df_txn_daily_pct</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">'transactions'</span><span class="p">:</span><span class="s1">'pct_change'</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Examine the first 5 rows</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df_txn_daily_pct</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>pct_change</th>
+    </tr>
+    <tr>
+      <th>block_date</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2022-07-01</th>
+      <td>-0.0273</td>
+    </tr>
+    <tr>
+      <th>2022-07-02</th>
+      <td>0.0066</td>
+    </tr>
+    <tr>
+      <th>2022-07-03</th>
+      <td>0.0307</td>
+    </tr>
+    <tr>
+      <th>2022-07-04</th>
+      <td>0.0422</td>
+    </tr>
+    <tr>
+      <th>2022-07-05</th>
+      <td>0.0301</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Visualize-the-Year-Over-Year-percentages">
+<a class="anchor" href="#Visualize-the-Year-Over-Year-percentages" aria-hidden="true"><span class="octicon octicon-link"></span></a>Visualize the Year-Over-Year percentages<a class="anchor-link" href="#Visualize-the-Year-Over-Year-percentages"> </a>
+</h3>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">alt</span><span class="o">.</span><span class="n">Chart</span><span class="p">(</span><span class="n">df_txn_daily_pct</span><span class="o">.</span><span class="n">reset_index</span><span class="p">())</span><span class="o">.</span><span class="n">mark_bar</span><span class="p">()</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span>
+    <span class="n">x</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">X</span><span class="p">(</span><span class="s1">'monthdate(block_date):O'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'Month-Day'</span><span class="p">),</span>
+    <span class="n">y</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">Y</span><span class="p">(</span><span class="s1">'pct_change:Q'</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">Axis</span><span class="p">(</span><span class="nb">format</span><span class="o">=</span><span class="s1">'%'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'Year-Over-Year 2022 vs 2021 % Difference'</span><span class="p">)),</span>
+    <span class="n">color</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span>
+        <span class="n">alt</span><span class="o">.</span><span class="n">datum</span><span class="o">.</span><span class="n">pct_change</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">alt</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">"steelblue"</span><span class="p">),</span>
+        <span class="n">alt</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">"orange"</span><span class="p">)),</span>
+    <span class="n">tooltip</span><span class="o">=</span><span class="p">[</span><span class="n">alt</span><span class="o">.</span><span class="n">Tooltip</span><span class="p">(</span><span class="s1">'monthdate(block_date)'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'Month-Day'</span><span class="p">),</span> <span class="n">alt</span><span class="o">.</span><span class="n">Tooltip</span><span class="p">(</span><span class="s1">'pct_change'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'2022 vs 2021 % Difference'</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">'.2%'</span><span class="p">)]</span>
+<span class="p">)</span><span class="o">.</span><span class="n">properties</span><span class="p">(</span>
+    <span class="n">height</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
+    <span class="n">width</span><span class="o">=</span><span class="mi">800</span><span class="p">,</span>
+    <span class="n">title</span><span class="o">=</span><span class="s1">'Chart 2 - 14</span><span class="si">% d</span><span class="s1">ecline in Ethereum transactions on 6 July 2022'</span>
+<span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+
+<div id="altair-viz-de60c05ab940474293d528988ee674c8"></div>
+<script type="text/javascript">
+  var VEGA_DEBUG = (typeof VEGA_DEBUG == "undefined") ? {} : VEGA_DEBUG;
+  (function(spec, embedOpt){
+    let outputDiv = document.currentScript.previousElementSibling;
+    if (outputDiv.id !== "altair-viz-de60c05ab940474293d528988ee674c8") {
+      outputDiv = document.getElementById("altair-viz-de60c05ab940474293d528988ee674c8");
+    }
+    const paths = {
+      "vega": "https://cdn.jsdelivr.net/npm//vega@5?noext",
+      "vega-lib": "https://cdn.jsdelivr.net/npm//vega-lib?noext",
+      "vega-lite": "https://cdn.jsdelivr.net/npm//vega-lite@4.17.0?noext",
+      "vega-embed": "https://cdn.jsdelivr.net/npm//vega-embed@6?noext",
+    };
+
+    function maybeLoadScript(lib, version) {
+      var key = `${lib.replace("-", "")}_version`;
+      return (VEGA_DEBUG[key] == version) ?
+        Promise.resolve(paths[lib]) :
+        new Promise(function(resolve, reject) {
+          var s = document.createElement('script');
+          document.getElementsByTagName("head")[0].appendChild(s);
+          s.async = true;
+          s.onload = () => {
+            VEGA_DEBUG[key] = version;
+            return resolve(paths[lib]);
+          };
+          s.onerror = () => reject(`Error loading script: ${paths[lib]}`);
+          s.src = paths[lib];
+        });
+    }
+
+    function showError(err) {
+      outputDiv.innerHTML = `<div class="error" style="color:red;">${err}</div>`;
+      throw err;
+    }
+
+    function displayChart(vegaEmbed) {
+      vegaEmbed(outputDiv, spec, embedOpt)
+        .catch(err => showError(`Javascript Error: ${err.message}<br>This usually means there's a typo in your chart specification. See the javascript console for the full traceback.`));
+    }
+
+    if(typeof define === "function" && define.amd) {
+      requirejs.config({paths});
+      require(["vega-embed"], displayChart, err => showError(`Error loading script: ${err.message}`));
+    } else {
+      maybeLoadScript("vega", "5")
+        .then(() => maybeLoadScript("vega-lite", "4.17.0"))
+        .then(() => maybeLoadScript("vega-embed", "6"))
+        .catch(showError)
+        .then(() => displayChart(vegaEmbed));
+    }
+  })({"config": {"view": {"continuousWidth": 400, "continuousHeight": 300}}, "data": {"name": "data-00e13823add68b1f38846a03ff078806"}, "mark": "bar", "encoding": {"color": {"condition": {"value": "steelblue", "test": "(datum.pct_change > 0)"}, "value": "orange"}, "tooltip": [{"field": "block_date", "timeUnit": "monthdate", "title": "Month-Day", "type": "temporal"}, {"field": "pct_change", "format": ".2%", "title": "2022 vs 2021 % Difference", "type": "quantitative"}], "x": {"field": "block_date", "timeUnit": "monthdate", "title": "Month-Day", "type": "ordinal"}, "y": {"axis": {"format": "%", "title": "Year-Over-Year 2022 vs 2021 % Difference"}, "field": "pct_change", "type": "quantitative"}}, "height": 500, "title": "Chart 2 - 14% decline in Ethereum transactions on 6 July 2022", "width": 800, "$schema": "https://vega.github.io/schema/vega-lite/v4.17.0.json", "datasets": {"data-00e13823add68b1f38846a03ff078806": [{"block_date": "2022-07-01T00:00:00", "pct_change": -0.027308514413514784}, {"block_date": "2022-07-02T00:00:00", "pct_change": 0.006608134573035551}, {"block_date": "2022-07-03T00:00:00", "pct_change": 0.030741806772658142}, {"block_date": "2022-07-04T00:00:00", "pct_change": 0.04220952229308006}, {"block_date": "2022-07-05T00:00:00", "pct_change": 0.03014997016277632}, {"block_date": "2022-07-06T00:00:00", "pct_change": -0.1431208458478952}, {"block_date": "2022-07-07T00:00:00", "pct_change": -0.0748648893591608}]}}, {"mode": "vega-lite"});
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Analysis:-Where-did-the-drop-in-transaction-come-from?">
+<a class="anchor" href="#Analysis:-Where-did-the-drop-in-transaction-come-from?" aria-hidden="true"><span class="octicon octicon-link"></span></a>Analysis: Where did the drop in transaction come from?<a class="anchor-link" href="#Analysis:-Where-did-the-drop-in-transaction-come-from?"> </a>
+</h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="Identify-Top-50-sender-addresses-with-the-most-transactions-on-6-July-2022-and-2021">
+<a class="anchor" href="#Identify-Top-50-sender-addresses-with-the-most-transactions-on-6-July-2022-and-2021" aria-hidden="true"><span class="octicon octicon-link"></span></a>Identify Top 50 sender addresses with the most transactions on 6 July 2022 and 2021<a class="anchor-link" href="#Identify-Top-50-sender-addresses-with-the-most-transactions-on-6-July-2022-and-2021"> </a>
+</h4>
+<ul>
+<li>The name (label) of addresses were manually sourced from <a href="https://etherscan.io/">etherscan</a> and saved as dataset 3 (see above).</li>
+<li>Note that an organization, for e.g. a crypto exchange can have multiple addresses.<ul>
+<li>For e.g. compare this address <a href="https://etherscan.io/address/0x3cd751e6b0078be393132286c442345e5dc49699">0x3cd751e6b0078be393132286c442345e5dc49699</a> and <a href="https://etherscan.io/address/0xb5d85cbf7cb3ee0d56b3bb207d5fc4b82f43f511">0xb5d85cbf7cb3ee0d56b3bb207d5fc4b82f43f511</a> in etherscan.</li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="Filter-dataset-1-(Ethereum-transactions)-to-6-July-2022-and-6-July-2021-and-add-address-names-(labels)">
+<a class="anchor" href="#Filter-dataset-1-(Ethereum-transactions)-to-6-July-2022-and-6-July-2021-and-add-address-names-(labels)" aria-hidden="true"><span class="octicon octicon-link"></span></a>Filter dataset 1 (Ethereum transactions) to 6 July 2022 and 6 July 2021 and add address names (labels)<a class="anchor-link" href="#Filter-dataset-1-(Ethereum-transactions)-to-6-July-2022-and-6-July-2021-and-add-address-names-(labels)"> </a>
+</h4>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df_agg</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">'block_date.isin(["2021-07-06","2022-07-06"])'</span><span class="p">)</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">'from'</span><span class="p">,</span><span class="s1">'block_date'</span><span class="p">])</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">total_transactions</span><span class="o">=</span><span class="p">(</span><span class="s1">'hash'</span><span class="p">,</span><span class="s1">'count'</span><span class="p">),</span><span class="n">total_value_eth</span><span class="o">=</span><span class="p">(</span><span class="s1">'eth_value'</span><span class="p">,</span><span class="s1">'sum'</span><span class="p">))</span>
+<span class="n">df_agg</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">df_agg</span><span class="p">[</span><span class="s1">'year'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_agg</span><span class="p">[</span><span class="s1">'block_date'</span><span class="p">]</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">year</span>
+<span class="n">df_agg</span> <span class="o">=</span> <span class="n">df_agg</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">df_labels</span><span class="p">,</span> <span class="n">left_on</span><span class="o">=</span><span class="s1">'from'</span><span class="p">,</span> <span class="n">right_on</span><span class="o">=</span><span class="s1">'address'</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">'left'</span><span class="p">)</span>
+<span class="n">df_agg</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="s1">'address'</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1">#Create additional column to group the addresses into "miners", "exchanges" and "no label"</span>
+<span class="n">cat_map</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'2Miners: PPLNS'</span><span class="p">:</span><span class="s1">'miner'</span><span class="p">,</span><span class="s1">'BeePool'</span><span class="p">:</span><span class="s1">'miner'</span><span class="p">,</span><span class="s1">'Binance'</span><span class="p">:</span><span class="s1">'exchange'</span><span class="p">,</span><span class="s1">'BlockFi'</span><span class="p">:</span><span class="s1">'exchange'</span><span class="p">,</span><span class="s1">'Coinbase'</span><span class="p">:</span><span class="s1">'exchange'</span><span class="p">,</span>
+           <span class="s1">'Crypto.com'</span><span class="p">:</span><span class="s1">'exchange'</span><span class="p">,</span><span class="s1">'Ethermine'</span><span class="p">:</span><span class="s1">'miner'</span><span class="p">,</span><span class="s1">'F2Pool Old'</span><span class="p">:</span><span class="s1">'miner'</span><span class="p">,</span><span class="s1">'FTX Exchange'</span><span class="p">:</span><span class="s1">'exchange'</span><span class="p">,</span><span class="s1">'Flexpool.io'</span><span class="p">:</span><span class="s1">'miner'</span><span class="p">,</span>
+           <span class="s1">'Gate.io'</span><span class="p">:</span><span class="s1">'exchange'</span><span class="p">,</span><span class="s1">'Gemini'</span><span class="p">:</span><span class="s1">'exchange'</span><span class="p">,</span><span class="s1">'Hiveon'</span><span class="p">:</span><span class="s1">'miner'</span><span class="p">,</span><span class="s1">'Hiveon Pool'</span><span class="p">:</span><span class="s1">'miner'</span><span class="p">,</span><span class="s1">'KuCoin'</span><span class="p">:</span><span class="s1">'exchange'</span><span class="p">,</span>
+           <span class="s1">'Nanopool'</span><span class="p">:</span><span class="s1">'miner'</span><span class="p">,</span><span class="s1">'No Label'</span><span class="p">:</span><span class="s1">'no label'</span><span class="p">,</span><span class="s1">'Spark Pool: Distributor'</span><span class="p">:</span><span class="s1">'miner'</span><span class="p">}</span>
+
+<span class="c1">#Categorize the addresses into higher level category</span>
+<span class="n">df_agg</span><span class="p">[</span><span class="s1">'address_category'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_agg</span><span class="p">[</span><span class="s1">'address_label'</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">cat_map</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">'category'</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="Example-Top-10-from-addresses-sorted-by-total-transactions-for-6-July-2021">
+<a class="anchor" href="#Example-Top-10-from-addresses-sorted-by-total-transactions-for-6-July-2021" aria-hidden="true"><span class="octicon octicon-link"></span></a>Example Top 10 <code>from</code> addresses sorted by total transactions for 6 July 2021<a class="anchor-link" href="#Example-Top-10-from-addresses-sorted-by-total-transactions-for-6-July-2021"> </a>
+</h4>
+<ul>
+<li>Below, we can see that there are multiple <code>from</code> addresses belonging to the same organization/user.</li>
+<li>So, we will group them into a single address label by doing another aggregation.</li>
+</ul>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df_agg</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">'block_date == "2021-07-06"'</span><span class="p">)</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s1">'total_transactions'</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:</span><span class="mi">10</span><span class="p">,:]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>from</th>
+      <th>block_date</th>
+      <th>total_transactions</th>
+      <th>total_value_eth</th>
+      <th>year</th>
+      <th>address_label</th>
+      <th>address_category</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>117394</th>
+      <td>0x28c6c06298d514db089934071355e5743bf21d60</td>
+      <td>2021-07-06</td>
+      <td>26214</td>
+      <td>199100.2383</td>
+      <td>2021</td>
+      <td>Binance</td>
+      <td>exchange</td>
+    </tr>
+    <tr>
+      <th>665632</th>
+      <td>0xea674fdde714fd979de3edf0f56aa9716b898ec8</td>
+      <td>2021-07-06</td>
+      <td>20714</td>
+      <td>5344.9277</td>
+      <td>2021</td>
+      <td>Ethermine</td>
+      <td>miner</td>
+    </tr>
+    <tr>
+      <th>97361</th>
+      <td>0x21a31ee1afc51d94c2efccaa2092ad1028285549</td>
+      <td>2021-07-06</td>
+      <td>17730</td>
+      <td>15577.6007</td>
+      <td>2021</td>
+      <td>Binance</td>
+      <td>exchange</td>
+    </tr>
+    <tr>
+      <th>201163</th>
+      <td>0x46340b20830761efd32832a74d7169b29feb9758</td>
+      <td>2021-07-06</td>
+      <td>17182</td>
+      <td>4324.6382</td>
+      <td>2021</td>
+      <td>Crypto.com</td>
+      <td>exchange</td>
+    </tr>
+    <tr>
+      <th>174445</th>
+      <td>0x3cd751e6b0078be393132286c442345e5dc49699</td>
+      <td>2021-07-06</td>
+      <td>16787</td>
+      <td>31528.9259</td>
+      <td>2021</td>
+      <td>Coinbase</td>
+      <td>exchange</td>
+    </tr>
+    <tr>
+      <th>517155</th>
+      <td>0xb5d85cbf7cb3ee0d56b3bb207d5fc4b82f43f511</td>
+      <td>2021-07-06</td>
+      <td>16046</td>
+      <td>24213.1106</td>
+      <td>2021</td>
+      <td>Coinbase</td>
+      <td>exchange</td>
+    </tr>
+    <tr>
+      <th>630743</th>
+      <td>0xddfabcdc4d8ffc6d5beaf154f18b778f892a0740</td>
+      <td>2021-07-06</td>
+      <td>15380</td>
+      <td>17467.0024</td>
+      <td>2021</td>
+      <td>Coinbase</td>
+      <td>exchange</td>
+    </tr>
+    <tr>
+      <th>635992</th>
+      <td>0xdfd5293d8e347dfe59e90efd55b2956a1343963d</td>
+      <td>2021-07-06</td>
+      <td>15225</td>
+      <td>26675.9143</td>
+      <td>2021</td>
+      <td>Binance</td>
+      <td>exchange</td>
+    </tr>
+    <tr>
+      <th>248558</th>
+      <td>0x56eddb7aa87536c09ccc2793473599fd21a8b17f</td>
+      <td>2021-07-06</td>
+      <td>13690</td>
+      <td>40479.3991</td>
+      <td>2021</td>
+      <td>Binance</td>
+      <td>exchange</td>
+    </tr>
+    <tr>
+      <th>428288</th>
+      <td>0x9696f59e4d72e237be84ffd425dcad154bf96976</td>
+      <td>2021-07-06</td>
+      <td>13268</td>
+      <td>43348.3426</td>
+      <td>2021</td>
+      <td>Binance</td>
+      <td>exchange</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="Aggregate-the-address-labels-by-category-(miners,-exchanges,-no-label)-for-6-July-2021-and-6-July-2022">
+<a class="anchor" href="#Aggregate-the-address-labels-by-category-(miners,-exchanges,-no-label)-for-6-July-2021-and-6-July-2022" aria-hidden="true"><span class="octicon octicon-link"></span></a>Aggregate the address labels by category (miners, exchanges, no label) for 6 July 2021 and 6 July 2022<a class="anchor-link" href="#Aggregate-the-address-labels-by-category-(miners,-exchanges,-no-label)-for-6-July-2021-and-6-July-2022"> </a>
+</h4>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df_agg_category</span> <span class="o">=</span> <span class="n">df_agg</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s1">'total_transactions'</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:</span><span class="mi">50</span><span class="p">,:]</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">'address_category'</span><span class="p">,</span><span class="s1">'year'</span><span class="p">])</span><span class="o">.</span><span class="n">agg</span><span class="p">({</span><span class="s1">'total_transactions'</span><span class="p">:</span><span class="s1">'sum'</span><span class="p">,</span><span class="s1">'total_value_eth'</span><span class="p">:</span><span class="s1">'sum'</span><span class="p">})</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="Create-Year-Over-Year-calculations-and-pivot-the-aggregated-category-dataset">
+<a class="anchor" href="#Create-Year-Over-Year-calculations-and-pivot-the-aggregated-category-dataset" aria-hidden="true"><span class="octicon octicon-link"></span></a>Create Year-Over-Year calculations and pivot the aggregated category dataset<a class="anchor-link" href="#Create-Year-Over-Year-calculations-and-pivot-the-aggregated-category-dataset"> </a>
+</h4>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df_agg_category_pivot</span> <span class="o">=</span> <span class="n">df_agg_category</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s1">'address_category'</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="s1">'year'</span><span class="p">)</span>
+<span class="n">df_agg_category_pivot</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'total_transactions_2021'</span><span class="p">,</span><span class="s1">'total_transactions_2022'</span><span class="p">,</span><span class="s1">'total_value_eth_2021'</span><span class="p">,</span><span class="s1">'total_value_eth_2022'</span><span class="p">]</span>
+
+<span class="c1">#Create additional calculations</span>
+<span class="n">df_agg_category_pivot</span><span class="p">[</span><span class="s1">'total_transactions_pct_diff'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_agg_category_pivot</span><span class="p">[</span><span class="s1">'total_transactions_2022'</span><span class="p">]</span><span class="o">/</span><span class="n">df_agg_category_pivot</span><span class="p">[</span><span class="s1">'total_transactions_2021'</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span>
+<span class="n">df_agg_category_pivot</span><span class="p">[</span><span class="s1">'total_value_eth_pct_diff'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_agg_category_pivot</span><span class="p">[</span><span class="s1">'total_value_eth_2022'</span><span class="p">]</span><span class="o">/</span><span class="n">df_agg_category_pivot</span><span class="p">[</span><span class="s1">'total_value_eth_2021'</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span>
+<span class="n">df_agg_category_pivot</span><span class="p">[</span><span class="s1">'value_per_transaction_2021'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_agg_category_pivot</span><span class="p">[</span><span class="s1">'total_value_eth_2021'</span><span class="p">]</span><span class="o">/</span><span class="n">df_agg_category_pivot</span><span class="p">[</span><span class="s1">'total_transactions_2021'</span><span class="p">]</span>
+<span class="n">df_agg_category_pivot</span><span class="p">[</span><span class="s1">'value_per_transaction_2022'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_agg_category_pivot</span><span class="p">[</span><span class="s1">'total_value_eth_2022'</span><span class="p">]</span><span class="o">/</span><span class="n">df_agg_category_pivot</span><span class="p">[</span><span class="s1">'total_transactions_2022'</span><span class="p">]</span>
+<span class="n">df_agg_category_pivot</span><span class="p">[</span><span class="s1">'value_per_txn_pct_diff'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_agg_category_pivot</span><span class="p">[</span><span class="s1">'value_per_transaction_2022'</span><span class="p">]</span><span class="o">/</span><span class="n">df_agg_category_pivot</span><span class="p">[</span><span class="s1">'value_per_transaction_2021'</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span>
+
+<span class="c1">#Replace infinite values with NaN</span>
+<span class="n">df_agg_category_pivot</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Visualize-the-Year-Over-Year-(6-July-2022-vs-6-July-2021)-by-address-categories">
+<a class="anchor" href="#Visualize-the-Year-Over-Year-(6-July-2022-vs-6-July-2021)-by-address-categories" aria-hidden="true"><span class="octicon octicon-link"></span></a>Visualize the Year-Over-Year (6 July 2022 vs 6 July 2021) by address categories<a class="anchor-link" href="#Visualize-the-Year-Over-Year-(6-July-2022-vs-6-July-2021)-by-address-categories"> </a>
+</h3>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">alt</span><span class="o">.</span><span class="n">Chart</span><span class="p">(</span><span class="n">df_agg_category_pivot</span><span class="o">.</span><span class="n">reset_index</span><span class="p">())</span><span class="o">.</span><span class="n">mark_bar</span><span class="p">()</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span>
+    <span class="n">x</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">X</span><span class="p">(</span><span class="s1">'total_transactions_pct_diff:Q'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'6 July 2022 vs 6 July 2021 Transactions % Difference'</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">Axis</span><span class="p">(</span><span class="nb">format</span><span class="o">=</span><span class="s1">'%'</span><span class="p">)),</span>
+    <span class="n">y</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">Y</span><span class="p">(</span><span class="s1">'address_category'</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="s1">'x'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'Address Category'</span><span class="p">),</span>
+    <span class="n">size</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">Size</span><span class="p">(</span><span class="s1">'total_transactions_2021:Q'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'6 July 2021 Transaction Volume'</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">Scale</span><span class="p">(</span><span class="nb">range</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">30</span><span class="p">])),</span>
+    <span class="n">color</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span>
+        <span class="n">alt</span><span class="o">.</span><span class="n">datum</span><span class="o">.</span><span class="n">total_transactions_pct_diff</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">alt</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">"steelblue"</span><span class="p">),</span>
+        <span class="n">alt</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">"orange"</span><span class="p">)),</span>
+    <span class="n">tooltip</span><span class="o">=</span><span class="p">[</span><span class="n">alt</span><span class="o">.</span><span class="n">Tooltip</span><span class="p">(</span><span class="s1">'address_category'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'Address Category'</span><span class="p">),</span>
+             <span class="n">alt</span><span class="o">.</span><span class="n">Tooltip</span><span class="p">(</span><span class="s1">'total_transactions_pct_diff'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'6 July 2022 vs 2021 % Diff'</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">'.2%'</span><span class="p">),</span> 
+             <span class="n">alt</span><span class="o">.</span><span class="n">Tooltip</span><span class="p">(</span><span class="s1">'total_transactions_2022'</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">','</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'6 July 2022 Transactions'</span><span class="p">),</span>
+             <span class="n">alt</span><span class="o">.</span><span class="n">Tooltip</span><span class="p">(</span><span class="s1">'total_transactions_2021'</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">','</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'6 July 2021 Transactions'</span><span class="p">)]</span>
+<span class="p">)</span><span class="o">.</span><span class="n">properties</span><span class="p">(</span>
+    <span class="n">height</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
+    <span class="n">width</span><span class="o">=</span><span class="mi">800</span><span class="p">,</span>
+    <span class="n">title</span><span class="o">=</span><span class="s1">'Chart 3 - Users with unidentified address labels showed a 73</span><span class="si">% d</span><span class="s1">ecrease in transactions for 6 July 2022 vs 2021'</span>
+<span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+
+<div id="altair-viz-032ed7eed7844156801be65f66081c73"></div>
+<script type="text/javascript">
+  var VEGA_DEBUG = (typeof VEGA_DEBUG == "undefined") ? {} : VEGA_DEBUG;
+  (function(spec, embedOpt){
+    let outputDiv = document.currentScript.previousElementSibling;
+    if (outputDiv.id !== "altair-viz-032ed7eed7844156801be65f66081c73") {
+      outputDiv = document.getElementById("altair-viz-032ed7eed7844156801be65f66081c73");
+    }
+    const paths = {
+      "vega": "https://cdn.jsdelivr.net/npm//vega@5?noext",
+      "vega-lib": "https://cdn.jsdelivr.net/npm//vega-lib?noext",
+      "vega-lite": "https://cdn.jsdelivr.net/npm//vega-lite@4.17.0?noext",
+      "vega-embed": "https://cdn.jsdelivr.net/npm//vega-embed@6?noext",
+    };
+
+    function maybeLoadScript(lib, version) {
+      var key = `${lib.replace("-", "")}_version`;
+      return (VEGA_DEBUG[key] == version) ?
+        Promise.resolve(paths[lib]) :
+        new Promise(function(resolve, reject) {
+          var s = document.createElement('script');
+          document.getElementsByTagName("head")[0].appendChild(s);
+          s.async = true;
+          s.onload = () => {
+            VEGA_DEBUG[key] = version;
+            return resolve(paths[lib]);
+          };
+          s.onerror = () => reject(`Error loading script: ${paths[lib]}`);
+          s.src = paths[lib];
+        });
+    }
+
+    function showError(err) {
+      outputDiv.innerHTML = `<div class="error" style="color:red;">${err}</div>`;
+      throw err;
+    }
+
+    function displayChart(vegaEmbed) {
+      vegaEmbed(outputDiv, spec, embedOpt)
+        .catch(err => showError(`Javascript Error: ${err.message}<br>This usually means there's a typo in your chart specification. See the javascript console for the full traceback.`));
+    }
+
+    if(typeof define === "function" && define.amd) {
+      requirejs.config({paths});
+      require(["vega-embed"], displayChart, err => showError(`Error loading script: ${err.message}`));
+    } else {
+      maybeLoadScript("vega", "5")
+        .then(() => maybeLoadScript("vega-lite", "4.17.0"))
+        .then(() => maybeLoadScript("vega-embed", "6"))
+        .catch(showError)
+        .then(() => displayChart(vegaEmbed));
+    }
+  })({"config": {"view": {"continuousWidth": 400, "continuousHeight": 300}}, "data": {"name": "data-5956c033663e8be6ff0e7d746a9913e7"}, "mark": "bar", "encoding": {"color": {"condition": {"value": "steelblue", "test": "(datum.total_transactions_pct_diff > 0)"}, "value": "orange"}, "size": {"field": "total_transactions_2021", "scale": {"range": [0, 30]}, "title": "6 July 2021 Transaction Volume", "type": "quantitative"}, "tooltip": [{"field": "address_category", "title": "Address Category", "type": "nominal"}, {"field": "total_transactions_pct_diff", "format": ".2%", "title": "6 July 2022 vs 2021 % Diff", "type": "quantitative"}, {"field": "total_transactions_2022", "format": ",", "title": "6 July 2022 Transactions", "type": "quantitative"}, {"field": "total_transactions_2021", "format": ",", "title": "6 July 2021 Transactions", "type": "quantitative"}], "x": {"axis": {"format": "%"}, "field": "total_transactions_pct_diff", "title": "6 July 2022 vs 6 July 2021 Transactions % Difference", "type": "quantitative"}, "y": {"field": "address_category", "sort": "x", "title": "Address Category", "type": "nominal"}}, "height": 500, "title": "Chart 3 - Users with unidentified address labels showed a 73% decrease in transactions for 6 July 2022 vs 2021", "width": 800, "$schema": "https://vega.github.io/schema/vega-lite/v4.17.0.json", "datasets": {"data-5956c033663e8be6ff0e7d746a9913e7": [{"address_category": "exchange", "total_transactions_2021": 197613, "total_transactions_2022": 92530, "total_value_eth_2021": 472939.246239039, "total_value_eth_2022": 312353.1050574708, "total_transactions_pct_diff": -0.5317615743903488, "total_value_eth_pct_diff": -0.33954919677019724, "value_per_transaction_2021": 2.393259786750057, "value_per_transaction_2022": 3.375695504781917, "value_per_txn_pct_diff": 0.4105010761769263}, {"address_category": "miner", "total_transactions_2021": 61600, "total_transactions_2022": 33617, "total_value_eth_2021": 13332.374089058667, "total_value_eth_2022": 8290.806485890322, "total_transactions_pct_diff": -0.4542694805194806, "total_value_eth_pct_diff": -0.3781447752284234, "value_per_transaction_2021": 0.21643464430290044, "value_per_transaction_2022": 0.24662541231788446, "value_per_txn_pct_diff": 0.13949138370256486}, {"address_category": "no label", "total_transactions_2021": 33066, "total_transactions_2022": 8829, "total_value_eth_2021": 1888.5941294435654, "total_value_eth_2022": 2042.9934579588828, "total_transactions_pct_diff": -0.7329885683179096, "total_value_eth_pct_diff": 0.08175357855253318, "value_per_transaction_2021": 0.05711589334795758, "value_per_transaction_2022": 0.2313957931769037, "value_per_txn_pct_diff": 3.0513380709500577}]}}, {"mode": "vega-lite"});
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="Aggregate-The-top-50-addresses-by-their-address-names-(labels)-for-6-July-2021-and-6-July-2022">
+<a class="anchor" href="#Aggregate-The-top-50-addresses-by-their-address-names-(labels)-for-6-July-2021-and-6-July-2022" aria-hidden="true"><span class="octicon octicon-link"></span></a>Aggregate The top 50 addresses by their address names (labels) for 6 July 2021 and 6 July 2022<a class="anchor-link" href="#Aggregate-The-top-50-addresses-by-their-address-names-(labels)-for-6-July-2021-and-6-July-2022"> </a>
+</h4>
+<ul>
+<li>As mentioned above, there can be multiple addresses from the same organization/user. So we will group them into a single address name by doing another aggregation.</li>
+</ul>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df_agg_label</span> <span class="o">=</span> <span class="n">df_agg</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s1">'total_transactions'</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:</span><span class="mi">50</span><span class="p">,:]</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">'address_label'</span><span class="p">,</span><span class="s1">'year'</span><span class="p">])</span><span class="o">.</span><span class="n">agg</span><span class="p">({</span><span class="s1">'total_transactions'</span><span class="p">:</span><span class="s1">'sum'</span><span class="p">,</span><span class="s1">'total_value_eth'</span><span class="p">:</span><span class="s1">'sum'</span><span class="p">})</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="Create-Year-Over-Year-calculations-and-pivot-the-dataset">
+<a class="anchor" href="#Create-Year-Over-Year-calculations-and-pivot-the-dataset" aria-hidden="true"><span class="octicon octicon-link"></span></a>Create Year-Over-Year calculations and pivot the dataset<a class="anchor-link" href="#Create-Year-Over-Year-calculations-and-pivot-the-dataset"> </a>
+</h4>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df_agg_label_pivot</span> <span class="o">=</span> <span class="n">df_agg_label</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s1">'address_label'</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="s1">'year'</span><span class="p">)</span>
+<span class="n">df_agg_label_pivot</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'total_transactions_2021'</span><span class="p">,</span><span class="s1">'total_transactions_2022'</span><span class="p">,</span><span class="s1">'total_value_eth_2021'</span><span class="p">,</span><span class="s1">'total_value_eth_2022'</span><span class="p">]</span>
+<span class="n">df_agg_label_pivot</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">df_agg_label_pivot</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1">#Create additional calculations</span>
+<span class="n">df_agg_label_pivot</span><span class="p">[</span><span class="s1">'total_transactions_pct_diff'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_agg_label_pivot</span><span class="p">[</span><span class="s1">'total_transactions_2022'</span><span class="p">]</span><span class="o">/</span><span class="n">df_agg_label_pivot</span><span class="p">[</span><span class="s1">'total_transactions_2021'</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span>
+<span class="n">df_agg_label_pivot</span><span class="p">[</span><span class="s1">'total_value_eth_pct_diff'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_agg_label_pivot</span><span class="p">[</span><span class="s1">'total_value_eth_2022'</span><span class="p">]</span><span class="o">/</span><span class="n">df_agg_label_pivot</span><span class="p">[</span><span class="s1">'total_value_eth_2021'</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span>
+<span class="n">df_agg_label_pivot</span><span class="p">[</span><span class="s1">'value_per_transaction_2021'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_agg_label_pivot</span><span class="p">[</span><span class="s1">'total_value_eth_2021'</span><span class="p">]</span><span class="o">/</span><span class="n">df_agg_label_pivot</span><span class="p">[</span><span class="s1">'total_transactions_2021'</span><span class="p">]</span>
+<span class="n">df_agg_label_pivot</span><span class="p">[</span><span class="s1">'value_per_transaction_2022'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_agg_label_pivot</span><span class="p">[</span><span class="s1">'total_value_eth_2022'</span><span class="p">]</span><span class="o">/</span><span class="n">df_agg_label_pivot</span><span class="p">[</span><span class="s1">'total_transactions_2022'</span><span class="p">]</span>
+<span class="n">df_agg_label_pivot</span><span class="p">[</span><span class="s1">'value_per_txn_pct_diff'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_agg_label_pivot</span><span class="p">[</span><span class="s1">'value_per_transaction_2022'</span><span class="p">]</span><span class="o">/</span><span class="n">df_agg_label_pivot</span><span class="p">[</span><span class="s1">'value_per_transaction_2021'</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span>
+
+<span class="c1">#Replace infinite values with NaN</span>
+<span class="n">df_agg_label_pivot</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">df_agg_label_pivot</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">'address_label'</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Examine the first 5 rows</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df_agg_label_pivot</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>total_transactions_2021</th>
+      <th>total_transactions_2022</th>
+      <th>total_value_eth_2021</th>
+      <th>total_value_eth_2022</th>
+      <th>total_transactions_pct_diff</th>
+      <th>total_value_eth_pct_diff</th>
+      <th>value_per_transaction_2021</th>
+      <th>value_per_transaction_2022</th>
+      <th>value_per_txn_pct_diff</th>
+    </tr>
+    <tr>
+      <th>address_label</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2Miners: PPLNS</th>
+      <td>9007.0000</td>
+      <td>4661.0000</td>
+      <td>805.2077</td>
+      <td>961.9955</td>
+      <td>-0.4825</td>
+      <td>0.1947</td>
+      <td>0.0894</td>
+      <td>0.2064</td>
+      <td>1.3087</td>
+    </tr>
+    <tr>
+      <th>BeePool</th>
+      <td>6347.0000</td>
+      <td>0.0000</td>
+      <td>867.6726</td>
+      <td>0.0000</td>
+      <td>-1.0000</td>
+      <td>-1.0000</td>
+      <td>0.1367</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>Binance</th>
+      <td>90505.0000</td>
+      <td>26033.0000</td>
+      <td>325242.7870</td>
+      <td>165070.8563</td>
+      <td>-0.7124</td>
+      <td>-0.4925</td>
+      <td>3.5936</td>
+      <td>6.3408</td>
+      <td>0.7645</td>
+    </tr>
+    <tr>
+      <th>BlockFi</th>
+      <td>6986.0000</td>
+      <td>0.0000</td>
+      <td>0.0000</td>
+      <td>0.0000</td>
+      <td>-1.0000</td>
+      <td>NaN</td>
+      <td>0.0000</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>Coinbase</th>
+      <td>65251.0000</td>
+      <td>45881.0000</td>
+      <td>97064.3755</td>
+      <td>93370.4280</td>
+      <td>-0.2969</td>
+      <td>-0.0381</td>
+      <td>1.4876</td>
+      <td>2.0351</td>
+      <td>0.3681</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Visualize-the-Year-Over-Year-(6-July-2022-vs-6-July-2021)-by-address-names-(labels)">
+<a class="anchor" href="#Visualize-the-Year-Over-Year-(6-July-2022-vs-6-July-2021)-by-address-names-(labels)" aria-hidden="true"><span class="octicon octicon-link"></span></a>Visualize the Year-Over-Year (6 July 2022 vs 6 July 2021) by address names (labels)<a class="anchor-link" href="#Visualize-the-Year-Over-Year-(6-July-2022-vs-6-July-2021)-by-address-names-(labels)"> </a>
+</h3>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">alt</span><span class="o">.</span><span class="n">Chart</span><span class="p">(</span><span class="n">df_agg_label_pivot</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="s1">'total_transactions_pct_diff'</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">())</span><span class="o">.</span><span class="n">mark_bar</span><span class="p">()</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span>
+    <span class="n">x</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">X</span><span class="p">(</span><span class="s1">'total_transactions_pct_diff:Q'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'6 July 2022 vs 6 July 2021 Transactions % Difference'</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">Axis</span><span class="p">(</span><span class="nb">format</span><span class="o">=</span><span class="s1">'%'</span><span class="p">)),</span>
+    <span class="n">y</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">Y</span><span class="p">(</span><span class="s1">'address_label'</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="s1">'x'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'Addresses'</span><span class="p">),</span>
+    <span class="n">size</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">Size</span><span class="p">(</span><span class="s1">'total_transactions_2021:Q'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'6 July 2021 Transaction Volume'</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">Scale</span><span class="p">(</span><span class="nb">range</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">30</span><span class="p">])),</span>
+    <span class="n">color</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span>
+        <span class="n">alt</span><span class="o">.</span><span class="n">datum</span><span class="o">.</span><span class="n">total_transactions_pct_diff</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">alt</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">"steelblue"</span><span class="p">),</span>
+        <span class="n">alt</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">"orange"</span><span class="p">)),</span>
+    <span class="n">tooltip</span><span class="o">=</span><span class="p">[</span><span class="n">alt</span><span class="o">.</span><span class="n">Tooltip</span><span class="p">(</span><span class="s1">'address_label'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'Address Name'</span><span class="p">),</span>
+             <span class="n">alt</span><span class="o">.</span><span class="n">Tooltip</span><span class="p">(</span><span class="s1">'total_transactions_pct_diff'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'6 July 2022 vs 2021 % Diff'</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">'.2%'</span><span class="p">),</span> 
+             <span class="n">alt</span><span class="o">.</span><span class="n">Tooltip</span><span class="p">(</span><span class="s1">'total_transactions_2022'</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">','</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'6 July 2022 Transactions'</span><span class="p">),</span>
+             <span class="n">alt</span><span class="o">.</span><span class="n">Tooltip</span><span class="p">(</span><span class="s1">'total_transactions_2021'</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">','</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'6 July 2021 Transactions'</span><span class="p">)]</span>
+<span class="p">)</span><span class="o">.</span><span class="n">properties</span><span class="p">(</span>
+    <span class="n">height</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
+    <span class="n">width</span><span class="o">=</span><span class="mi">800</span><span class="p">,</span>
+    <span class="n">title</span><span class="o">=</span><span class="s1">'Chart 4 - Out of the top 50 addresses only FTX (a crypto exchange), showed a 177</span><span class="si">% i</span><span class="s1">ncrease in transactions for 6 July 2022 vs 2021'</span>
+<span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+
+<div id="altair-viz-32b0d49c05db418fbc1aaab0b16356b1"></div>
+<script type="text/javascript">
+  var VEGA_DEBUG = (typeof VEGA_DEBUG == "undefined") ? {} : VEGA_DEBUG;
+  (function(spec, embedOpt){
+    let outputDiv = document.currentScript.previousElementSibling;
+    if (outputDiv.id !== "altair-viz-32b0d49c05db418fbc1aaab0b16356b1") {
+      outputDiv = document.getElementById("altair-viz-32b0d49c05db418fbc1aaab0b16356b1");
+    }
+    const paths = {
+      "vega": "https://cdn.jsdelivr.net/npm//vega@5?noext",
+      "vega-lib": "https://cdn.jsdelivr.net/npm//vega-lib?noext",
+      "vega-lite": "https://cdn.jsdelivr.net/npm//vega-lite@4.17.0?noext",
+      "vega-embed": "https://cdn.jsdelivr.net/npm//vega-embed@6?noext",
+    };
+
+    function maybeLoadScript(lib, version) {
+      var key = `${lib.replace("-", "")}_version`;
+      return (VEGA_DEBUG[key] == version) ?
+        Promise.resolve(paths[lib]) :
+        new Promise(function(resolve, reject) {
+          var s = document.createElement('script');
+          document.getElementsByTagName("head")[0].appendChild(s);
+          s.async = true;
+          s.onload = () => {
+            VEGA_DEBUG[key] = version;
+            return resolve(paths[lib]);
+          };
+          s.onerror = () => reject(`Error loading script: ${paths[lib]}`);
+          s.src = paths[lib];
+        });
+    }
+
+    function showError(err) {
+      outputDiv.innerHTML = `<div class="error" style="color:red;">${err}</div>`;
+      throw err;
+    }
+
+    function displayChart(vegaEmbed) {
+      vegaEmbed(outputDiv, spec, embedOpt)
+        .catch(err => showError(`Javascript Error: ${err.message}<br>This usually means there's a typo in your chart specification. See the javascript console for the full traceback.`));
+    }
+
+    if(typeof define === "function" && define.amd) {
+      requirejs.config({paths});
+      require(["vega-embed"], displayChart, err => showError(`Error loading script: ${err.message}`));
+    } else {
+      maybeLoadScript("vega", "5")
+        .then(() => maybeLoadScript("vega-lite", "4.17.0"))
+        .then(() => maybeLoadScript("vega-embed", "6"))
+        .catch(showError)
+        .then(() => displayChart(vegaEmbed));
+    }
+  })({"config": {"view": {"continuousWidth": 400, "continuousHeight": 300}}, "data": {"name": "data-b90014e139eeb7fecef619972ca703b8"}, "mark": "bar", "encoding": {"color": {"condition": {"value": "steelblue", "test": "(datum.total_transactions_pct_diff > 0)"}, "value": "orange"}, "size": {"field": "total_transactions_2021", "scale": {"range": [0, 30]}, "title": "6 July 2021 Transaction Volume", "type": "quantitative"}, "tooltip": [{"field": "address_label", "title": "Address Name", "type": "nominal"}, {"field": "total_transactions_pct_diff", "format": ".2%", "title": "6 July 2022 vs 2021 % Diff", "type": "quantitative"}, {"field": "total_transactions_2022", "format": ",", "title": "6 July 2022 Transactions", "type": "quantitative"}, {"field": "total_transactions_2021", "format": ",", "title": "6 July 2021 Transactions", "type": "quantitative"}], "x": {"axis": {"format": "%"}, "field": "total_transactions_pct_diff", "title": "6 July 2022 vs 6 July 2021 Transactions % Difference", "type": "quantitative"}, "y": {"field": "address_label", "sort": "x", "title": "Addresses", "type": "nominal"}}, "height": 500, "title": "Chart 4 - Out of the top 50 addresses only FTX (a crypto exchange), showed a 177% increase in transactions for 6 July 2022 vs 2021", "width": 800, "$schema": "https://vega.github.io/schema/vega-lite/v4.17.0.json", "datasets": {"data-b90014e139eeb7fecef619972ca703b8": [{"address_label": "2Miners: PPLNS", "total_transactions_2021": 9007.0, "total_transactions_2022": 4661.0, "total_value_eth_2021": 805.207741546, "total_value_eth_2022": 961.9954971029999, "total_transactions_pct_diff": -0.4825136005329188, "total_value_eth_pct_diff": 0.19471714871489842, "value_per_transaction_2021": 0.08939799506450538, "value_per_transaction_2022": 0.20639251171486803, "value_per_txn_pct_diff": 1.308692846701371}, {"address_label": "BeePool", "total_transactions_2021": 6347.0, "total_transactions_2022": 0.0, "total_value_eth_2021": 867.67257, "total_value_eth_2022": 0.0, "total_transactions_pct_diff": -1.0, "total_value_eth_pct_diff": -1.0, "value_per_transaction_2021": 0.1367059350874429, "value_per_transaction_2022": null, "value_per_txn_pct_diff": null}, {"address_label": "Binance", "total_transactions_2021": 90505.0, "total_transactions_2022": 26033.0, "total_value_eth_2021": 325242.78704620997, "total_value_eth_2022": 165070.85631193, "total_transactions_pct_diff": -0.7123584332357329, "total_value_eth_pct_diff": -0.4924688174914791, "value_per_transaction_2021": 3.5936444068969666, "value_per_transaction_2022": 6.340831110971843, "value_per_txn_pct_diff": 0.7644570227378207}, {"address_label": "BlockFi", "total_transactions_2021": 6986.0, "total_transactions_2022": 0.0, "total_value_eth_2021": 0.0, "total_value_eth_2022": 0.0, "total_transactions_pct_diff": -1.0, "total_value_eth_pct_diff": null, "value_per_transaction_2021": 0.0, "value_per_transaction_2022": null, "value_per_txn_pct_diff": null}, {"address_label": "Coinbase", "total_transactions_2021": 65251.0, "total_transactions_2022": 45881.0, "total_value_eth_2021": 97064.37545876014, "total_value_eth_2022": 93370.42798035343, "total_transactions_pct_diff": -0.29685368806608325, "total_value_eth_pct_diff": -0.03805667590140904, "value_per_transaction_2021": 1.4875538376233337, "value_per_transaction_2022": 2.0350565153408477, "value_per_txn_pct_diff": 0.3680557058642393}, {"address_label": "Crypto.com", "total_transactions_2021": 17182.0, "total_transactions_2022": 7354.0, "total_value_eth_2021": 4324.638217418021, "total_value_eth_2022": 4609.642168927356, "total_transactions_pct_diff": -0.5719939471539983, "total_value_eth_pct_diff": 0.06590238007920424, "value_per_transaction_2021": 0.2516958571422431, "value_per_transaction_2022": 0.6268210727396458, "value_per_txn_pct_diff": 1.490390902164929}, {"address_label": "Ethermine", "total_transactions_2021": 20714.0, "total_transactions_2022": 18967.0, "total_value_eth_2021": 5344.927707614215, "total_value_eth_2022": 3983.203973743854, "total_transactions_pct_diff": -0.08433909433233566, "total_value_eth_pct_diff": -0.25476934551060304, "value_per_transaction_2021": 0.2580345518786432, "value_per_transaction_2022": 0.2100070635178918, "value_per_txn_pct_diff": -0.18612812900862719}, {"address_label": "F2Pool Old", "total_transactions_2021": 5685.0, "total_transactions_2022": 3298.0, "total_value_eth_2021": 1252.032787717207, "total_value_eth_2022": 1830.9623723343698, "total_transactions_pct_diff": -0.41987686895338605, "total_value_eth_pct_diff": 0.46239171233902554, "value_per_transaction_2021": 0.2202344393521912, "value_per_transaction_2022": 0.5551735513445633, "value_per_txn_pct_diff": 1.5208298619306726}, {"address_label": "FTX Exchange", "total_transactions_2021": 4796.0, "total_transactions_2022": 13262.0, "total_value_eth_2021": 53.04, "total_value_eth_2022": 49302.17859626, "total_transactions_pct_diff": 1.7652210175145955, "total_value_eth_pct_diff": 928.5282540773001, "value_per_transaction_2021": 0.011059216013344454, "value_per_transaction_2022": 3.7175522995219423, "value_per_txn_pct_diff": 335.1497139612978}, {"address_label": "Gate.io", "total_transactions_2021": 5300.0, "total_transactions_2022": 0.0, "total_value_eth_2021": 3874.3286134572, "total_value_eth_2022": 0.0, "total_transactions_pct_diff": -1.0, "total_value_eth_pct_diff": -1.0, "value_per_transaction_2021": 0.7310053987655094, "value_per_transaction_2022": null, "value_per_txn_pct_diff": null}, {"address_label": "Gemini", "total_transactions_2021": 3640.0, "total_transactions_2022": 0.0, "total_value_eth_2021": 42380.076903193665, "total_value_eth_2022": 0.0, "total_transactions_pct_diff": -1.0, "total_value_eth_pct_diff": -1.0, "value_per_transaction_2021": 11.64287827010815, "value_per_transaction_2022": null, "value_per_txn_pct_diff": null}, {"address_label": "Hiveon Pool", "total_transactions_2021": 7210.0, "total_transactions_2022": 0.0, "total_value_eth_2021": 981.845327532, "total_value_eth_2022": 0.0, "total_transactions_pct_diff": -1.0, "total_value_eth_pct_diff": -1.0, "value_per_transaction_2021": 0.1361782701153953, "value_per_transaction_2022": null, "value_per_txn_pct_diff": null}, {"address_label": "KuCoin", "total_transactions_2021": 3953.0, "total_transactions_2022": 0.0, "total_value_eth_2021": 0.0, "total_value_eth_2022": 0.0, "total_transactions_pct_diff": -1.0, "total_value_eth_pct_diff": null, "value_per_transaction_2021": 0.0, "value_per_transaction_2022": null, "value_per_txn_pct_diff": null}, {"address_label": "Nanopool", "total_transactions_2021": 5049.0, "total_transactions_2022": 0.0, "total_value_eth_2021": 860.9277666027583, "total_value_eth_2022": 0.0, "total_transactions_pct_diff": -1.0, "total_value_eth_pct_diff": -1.0, "value_per_transaction_2021": 0.1705145111116574, "value_per_transaction_2022": null, "value_per_txn_pct_diff": null}, {"address_label": "No Label", "total_transactions_2021": 33066.0, "total_transactions_2022": 8829.0, "total_value_eth_2021": 1888.5941294435654, "total_value_eth_2022": 2042.9934579588828, "total_transactions_pct_diff": -0.7329885683179096, "total_value_eth_pct_diff": 0.08175357855253318, "value_per_transaction_2021": 0.05711589334795758, "value_per_transaction_2022": 0.2313957931769037, "value_per_txn_pct_diff": 3.0513380709500577}, {"address_label": "Spark Pool: Distributor", "total_transactions_2021": 7588.0, "total_transactions_2022": 0.0, "total_value_eth_2021": 3219.760188046487, "total_value_eth_2022": 0.0, "total_transactions_pct_diff": -1.0, "total_value_eth_pct_diff": -1.0, "value_per_transaction_2021": 0.4243226394368064, "value_per_transaction_2022": null, "value_per_txn_pct_diff": null}]}}, {"mode": "vega-lite"});
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="What-does-the-above-charts-tell-us?">
+<a class="anchor" href="#What-does-the-above-charts-tell-us?" aria-hidden="true"><span class="octicon octicon-link"></span></a>What does the above charts tell us?<a class="anchor-link" href="#What-does-the-above-charts-tell-us?"> </a>
+</h3>
+<ul>
+<li>From the chart above, we can see that there are 3 groups: <strong>miners</strong>, <strong>crypto exchanges</strong> and <strong>No Label</strong>.<ul>
+<li>Miners: BeePool, Hiveon Pool, Nanopool, Spark Pool, 2Miners, F2Pool and Ethermine.</li>
+<li>Exchanges: BlockFi, Gate.io, Gemini, KuCoin, Binance, Crypto.com, Coinbase and FTX.</li>
+<li>No Label: User(s) or organization(s) where there is no name/label given to their addresses in <a href="https://etherscan.io/">etherscan</a>.</li>
+</ul>
+</li>
+<li>The bars in orange, are from the Top 50 addresses contributing to the overall decline of transactions on 6 July 2022.<ul>
+<li>For e.g., (if you hover on the bar for Binance), the number of transactions from Binance addresses dropped by 71% in 6 July 2022 compared to same date last year.</li>
+<li>Also, the thickness of the bar tells us that it has the highest volume of transactions on 6 July 2021, around 90K.</li>
+</ul>
+</li>
+<li>There was a 177% increase in transactions from FTX, though the volume is relatively small compared to the rest.</li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="If-we-exclude-FTX-and-include-the-total-Ethereum-(ETH)-transacted-in-the-chart">
+<a class="anchor" href="#If-we-exclude-FTX-and-include-the-total-Ethereum-(ETH)-transacted-in-the-chart" aria-hidden="true"><span class="octicon octicon-link"></span></a>If we exclude FTX and include the total Ethereum (ETH) transacted in the chart<a class="anchor-link" href="#If-we-exclude-FTX-and-include-the-total-Ethereum-(ETH)-transacted-in-the-chart"> </a>
+</h3>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df_agg_label_pivot_excl</span> <span class="o">=</span> <span class="n">df_agg_label_pivot</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="s1">'total_transactions_pct_diff'</span><span class="p">)</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">'total_transactions_pct_diff &lt; 0'</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">bar</span> <span class="o">=</span> <span class="n">alt</span><span class="o">.</span><span class="n">Chart</span><span class="p">(</span><span class="n">df_agg_label_pivot_excl</span><span class="p">)</span><span class="o">.</span><span class="n">mark_bar</span><span class="p">()</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span>
+    <span class="n">x</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">X</span><span class="p">(</span><span class="s1">'total_transactions_pct_diff:Q'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'6 July 2022 vs 6 July 2021 Transactions and ETH Value % Difference'</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">Axis</span><span class="p">(</span><span class="nb">format</span><span class="o">=</span><span class="s1">'%'</span><span class="p">)),</span>
+    <span class="n">y</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">Y</span><span class="p">(</span><span class="s1">'address_label'</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="s1">'x'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'Addresses'</span><span class="p">),</span>
+    <span class="n">size</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">Size</span><span class="p">(</span><span class="s1">'total_transactions_2021:Q'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'6 July 2021 Transaction Volume'</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">Scale</span><span class="p">(</span><span class="nb">range</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">30</span><span class="p">])),</span>
+    <span class="n">color</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">condition</span><span class="p">(</span>
+        <span class="n">alt</span><span class="o">.</span><span class="n">datum</span><span class="o">.</span><span class="n">total_transactions_pct_diff</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">alt</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">"steelblue"</span><span class="p">),</span>
+        <span class="n">alt</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s2">"orange"</span><span class="p">)),</span>
+    <span class="n">tooltip</span><span class="o">=</span><span class="p">[</span><span class="n">alt</span><span class="o">.</span><span class="n">Tooltip</span><span class="p">(</span><span class="s1">'address_label'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'Address Name'</span><span class="p">),</span>
+             <span class="n">alt</span><span class="o">.</span><span class="n">Tooltip</span><span class="p">(</span><span class="s1">'total_transactions_pct_diff'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'6 July 2022 vs 2021 % Diff'</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">'.2%'</span><span class="p">),</span> 
+             <span class="n">alt</span><span class="o">.</span><span class="n">Tooltip</span><span class="p">(</span><span class="s1">'total_transactions_2022'</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">','</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'6 July 2022 Transactions'</span><span class="p">),</span>
+             <span class="n">alt</span><span class="o">.</span><span class="n">Tooltip</span><span class="p">(</span><span class="s1">'total_transactions_2021'</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">','</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'6 July 2021 Transactions'</span><span class="p">)]</span>
+<span class="p">)</span><span class="o">.</span><span class="n">properties</span><span class="p">(</span>
+    <span class="n">height</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
+    <span class="n">width</span><span class="o">=</span><span class="mi">800</span>
+<span class="p">)</span>
+
+
+<span class="n">tick</span> <span class="o">=</span> <span class="n">alt</span><span class="o">.</span><span class="n">Chart</span><span class="p">(</span><span class="n">df_agg_label_pivot_excl</span><span class="p">)</span><span class="o">.</span><span class="n">mark_tick</span><span class="p">(</span>
+    <span class="n">color</span><span class="o">=</span><span class="s1">'slategray'</span><span class="p">,</span>
+    <span class="n">thickness</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+    <span class="n">size</span><span class="o">=</span><span class="mi">40</span> <span class="o">*</span> <span class="mf">0.7</span>
+<span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span>
+         <span class="n">x</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">X</span><span class="p">(</span><span class="s1">'total_value_eth_pct_diff'</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">Axis</span><span class="p">(</span><span class="nb">format</span><span class="o">=</span><span class="s1">'%'</span><span class="p">)),</span>
+         <span class="n">y</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">Y</span><span class="p">(</span><span class="s1">'address_label'</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="n">alt</span><span class="o">.</span><span class="n">Sort</span><span class="p">(</span><span class="n">field</span><span class="o">=</span><span class="s1">'total_transactions_pct_diff'</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">'ascending'</span><span class="p">),</span> <span class="n">title</span><span class="o">=</span><span class="s1">'Addresses'</span><span class="p">),</span>
+         <span class="n">tooltip</span><span class="o">=</span><span class="p">[</span><span class="n">alt</span><span class="o">.</span><span class="n">Tooltip</span><span class="p">(</span><span class="s1">'address_label'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'Address Name'</span><span class="p">),</span>
+                  <span class="n">alt</span><span class="o">.</span><span class="n">Tooltip</span><span class="p">(</span><span class="s1">'total_value_eth_pct_diff'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'6 July 2022 vs 2021 ETH Transacted % Diff'</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">'.2%'</span><span class="p">),</span> 
+                  <span class="n">alt</span><span class="o">.</span><span class="n">Tooltip</span><span class="p">(</span><span class="s1">'total_value_eth_2022'</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">','</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'6 July 2022 Total ETH Transacted'</span><span class="p">),</span>
+                  <span class="n">alt</span><span class="o">.</span><span class="n">Tooltip</span><span class="p">(</span><span class="s1">'total_value_eth_2021'</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">','</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'6 July 2021 Total ETH Transacted'</span><span class="p">)]</span>
+<span class="p">)</span><span class="o">.</span><span class="n">properties</span><span class="p">(</span>
+    <span class="n">height</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
+    <span class="n">width</span><span class="o">=</span><span class="mi">800</span><span class="p">,</span>
+    <span class="n">title</span><span class="o">=</span><span class="s1">'Chart 5 - Despite decrease in transactions, e.g. F2Pool Old, showed a 46</span><span class="si">% i</span><span class="s1">ncrease in number of ETH transacted on 6 July 2022 vs 2021'</span>
+<span class="p">)</span>
+
+<span class="n">bar</span> <span class="o">+</span> <span class="n">tick</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+
+<div id="altair-viz-1724f730318442b9840585fe073776a4"></div>
+<script type="text/javascript">
+  var VEGA_DEBUG = (typeof VEGA_DEBUG == "undefined") ? {} : VEGA_DEBUG;
+  (function(spec, embedOpt){
+    let outputDiv = document.currentScript.previousElementSibling;
+    if (outputDiv.id !== "altair-viz-1724f730318442b9840585fe073776a4") {
+      outputDiv = document.getElementById("altair-viz-1724f730318442b9840585fe073776a4");
+    }
+    const paths = {
+      "vega": "https://cdn.jsdelivr.net/npm//vega@5?noext",
+      "vega-lib": "https://cdn.jsdelivr.net/npm//vega-lib?noext",
+      "vega-lite": "https://cdn.jsdelivr.net/npm//vega-lite@4.17.0?noext",
+      "vega-embed": "https://cdn.jsdelivr.net/npm//vega-embed@6?noext",
+    };
+
+    function maybeLoadScript(lib, version) {
+      var key = `${lib.replace("-", "")}_version`;
+      return (VEGA_DEBUG[key] == version) ?
+        Promise.resolve(paths[lib]) :
+        new Promise(function(resolve, reject) {
+          var s = document.createElement('script');
+          document.getElementsByTagName("head")[0].appendChild(s);
+          s.async = true;
+          s.onload = () => {
+            VEGA_DEBUG[key] = version;
+            return resolve(paths[lib]);
+          };
+          s.onerror = () => reject(`Error loading script: ${paths[lib]}`);
+          s.src = paths[lib];
+        });
+    }
+
+    function showError(err) {
+      outputDiv.innerHTML = `<div class="error" style="color:red;">${err}</div>`;
+      throw err;
+    }
+
+    function displayChart(vegaEmbed) {
+      vegaEmbed(outputDiv, spec, embedOpt)
+        .catch(err => showError(`Javascript Error: ${err.message}<br>This usually means there's a typo in your chart specification. See the javascript console for the full traceback.`));
+    }
+
+    if(typeof define === "function" && define.amd) {
+      requirejs.config({paths});
+      require(["vega-embed"], displayChart, err => showError(`Error loading script: ${err.message}`));
+    } else {
+      maybeLoadScript("vega", "5")
+        .then(() => maybeLoadScript("vega-lite", "4.17.0"))
+        .then(() => maybeLoadScript("vega-embed", "6"))
+        .catch(showError)
+        .then(() => displayChart(vegaEmbed));
+    }
+  })({"config": {"view": {"continuousWidth": 400, "continuousHeight": 300}}, "layer": [{"mark": "bar", "encoding": {"color": {"condition": {"value": "steelblue", "test": "(datum.total_transactions_pct_diff > 0)"}, "value": "orange"}, "size": {"field": "total_transactions_2021", "scale": {"range": [0, 30]}, "title": "6 July 2021 Transaction Volume", "type": "quantitative"}, "tooltip": [{"field": "address_label", "title": "Address Name", "type": "nominal"}, {"field": "total_transactions_pct_diff", "format": ".2%", "title": "6 July 2022 vs 2021 % Diff", "type": "quantitative"}, {"field": "total_transactions_2022", "format": ",", "title": "6 July 2022 Transactions", "type": "quantitative"}, {"field": "total_transactions_2021", "format": ",", "title": "6 July 2021 Transactions", "type": "quantitative"}], "x": {"axis": {"format": "%"}, "field": "total_transactions_pct_diff", "title": "6 July 2022 vs 6 July 2021 Transactions and ETH Value % Difference", "type": "quantitative"}, "y": {"field": "address_label", "sort": "x", "title": "Addresses", "type": "nominal"}}, "height": 500, "width": 800}, {"mark": {"type": "tick", "color": "slategray", "size": 28.0, "thickness": 5}, "encoding": {"tooltip": [{"field": "address_label", "title": "Address Name", "type": "nominal"}, {"field": "total_value_eth_pct_diff", "format": ".2%", "title": "6 July 2022 vs 2021 ETH Transacted % Diff", "type": "quantitative"}, {"field": "total_value_eth_2022", "format": ",", "title": "6 July 2022 Total ETH Transacted", "type": "quantitative"}, {"field": "total_value_eth_2021", "format": ",", "title": "6 July 2021 Total ETH Transacted", "type": "quantitative"}], "x": {"axis": {"format": "%"}, "field": "total_value_eth_pct_diff", "type": "quantitative"}, "y": {"field": "address_label", "sort": {"field": "total_transactions_pct_diff", "order": "ascending"}, "title": "Addresses", "type": "nominal"}}, "height": 500, "title": "Chart 5 - Despite decrease in transactions, e.g. F2Pool Old, showed a 46% increase in number of ETH transacted on 6 July 2022 vs 2021", "width": 800}], "data": {"name": "data-0e02b80320c950dc67be1629b1f309a7"}, "$schema": "https://vega.github.io/schema/vega-lite/v4.17.0.json", "datasets": {"data-0e02b80320c950dc67be1629b1f309a7": [{"address_label": "2Miners: PPLNS", "total_transactions_2021": 9007.0, "total_transactions_2022": 4661.0, "total_value_eth_2021": 805.207741546, "total_value_eth_2022": 961.9954971029999, "total_transactions_pct_diff": -0.4825136005329188, "total_value_eth_pct_diff": 0.19471714871489842, "value_per_transaction_2021": 0.08939799506450538, "value_per_transaction_2022": 0.20639251171486803, "value_per_txn_pct_diff": 1.308692846701371}, {"address_label": "BeePool", "total_transactions_2021": 6347.0, "total_transactions_2022": 0.0, "total_value_eth_2021": 867.67257, "total_value_eth_2022": 0.0, "total_transactions_pct_diff": -1.0, "total_value_eth_pct_diff": -1.0, "value_per_transaction_2021": 0.1367059350874429, "value_per_transaction_2022": null, "value_per_txn_pct_diff": null}, {"address_label": "Binance", "total_transactions_2021": 90505.0, "total_transactions_2022": 26033.0, "total_value_eth_2021": 325242.78704620997, "total_value_eth_2022": 165070.85631193, "total_transactions_pct_diff": -0.7123584332357329, "total_value_eth_pct_diff": -0.4924688174914791, "value_per_transaction_2021": 3.5936444068969666, "value_per_transaction_2022": 6.340831110971843, "value_per_txn_pct_diff": 0.7644570227378207}, {"address_label": "BlockFi", "total_transactions_2021": 6986.0, "total_transactions_2022": 0.0, "total_value_eth_2021": 0.0, "total_value_eth_2022": 0.0, "total_transactions_pct_diff": -1.0, "total_value_eth_pct_diff": null, "value_per_transaction_2021": 0.0, "value_per_transaction_2022": null, "value_per_txn_pct_diff": null}, {"address_label": "Coinbase", "total_transactions_2021": 65251.0, "total_transactions_2022": 45881.0, "total_value_eth_2021": 97064.37545876014, "total_value_eth_2022": 93370.42798035343, "total_transactions_pct_diff": -0.29685368806608325, "total_value_eth_pct_diff": -0.03805667590140904, "value_per_transaction_2021": 1.4875538376233337, "value_per_transaction_2022": 2.0350565153408477, "value_per_txn_pct_diff": 0.3680557058642393}, {"address_label": "Crypto.com", "total_transactions_2021": 17182.0, "total_transactions_2022": 7354.0, "total_value_eth_2021": 4324.638217418021, "total_value_eth_2022": 4609.642168927356, "total_transactions_pct_diff": -0.5719939471539983, "total_value_eth_pct_diff": 0.06590238007920424, "value_per_transaction_2021": 0.2516958571422431, "value_per_transaction_2022": 0.6268210727396458, "value_per_txn_pct_diff": 1.490390902164929}, {"address_label": "Ethermine", "total_transactions_2021": 20714.0, "total_transactions_2022": 18967.0, "total_value_eth_2021": 5344.927707614215, "total_value_eth_2022": 3983.203973743854, "total_transactions_pct_diff": -0.08433909433233566, "total_value_eth_pct_diff": -0.25476934551060304, "value_per_transaction_2021": 0.2580345518786432, "value_per_transaction_2022": 0.2100070635178918, "value_per_txn_pct_diff": -0.18612812900862719}, {"address_label": "F2Pool Old", "total_transactions_2021": 5685.0, "total_transactions_2022": 3298.0, "total_value_eth_2021": 1252.032787717207, "total_value_eth_2022": 1830.9623723343698, "total_transactions_pct_diff": -0.41987686895338605, "total_value_eth_pct_diff": 0.46239171233902554, "value_per_transaction_2021": 0.2202344393521912, "value_per_transaction_2022": 0.5551735513445633, "value_per_txn_pct_diff": 1.5208298619306726}, {"address_label": "Gate.io", "total_transactions_2021": 5300.0, "total_transactions_2022": 0.0, "total_value_eth_2021": 3874.3286134572, "total_value_eth_2022": 0.0, "total_transactions_pct_diff": -1.0, "total_value_eth_pct_diff": -1.0, "value_per_transaction_2021": 0.7310053987655094, "value_per_transaction_2022": null, "value_per_txn_pct_diff": null}, {"address_label": "Gemini", "total_transactions_2021": 3640.0, "total_transactions_2022": 0.0, "total_value_eth_2021": 42380.076903193665, "total_value_eth_2022": 0.0, "total_transactions_pct_diff": -1.0, "total_value_eth_pct_diff": -1.0, "value_per_transaction_2021": 11.64287827010815, "value_per_transaction_2022": null, "value_per_txn_pct_diff": null}, {"address_label": "Hiveon Pool", "total_transactions_2021": 7210.0, "total_transactions_2022": 0.0, "total_value_eth_2021": 981.845327532, "total_value_eth_2022": 0.0, "total_transactions_pct_diff": -1.0, "total_value_eth_pct_diff": -1.0, "value_per_transaction_2021": 0.1361782701153953, "value_per_transaction_2022": null, "value_per_txn_pct_diff": null}, {"address_label": "KuCoin", "total_transactions_2021": 3953.0, "total_transactions_2022": 0.0, "total_value_eth_2021": 0.0, "total_value_eth_2022": 0.0, "total_transactions_pct_diff": -1.0, "total_value_eth_pct_diff": null, "value_per_transaction_2021": 0.0, "value_per_transaction_2022": null, "value_per_txn_pct_diff": null}, {"address_label": "Nanopool", "total_transactions_2021": 5049.0, "total_transactions_2022": 0.0, "total_value_eth_2021": 860.9277666027583, "total_value_eth_2022": 0.0, "total_transactions_pct_diff": -1.0, "total_value_eth_pct_diff": -1.0, "value_per_transaction_2021": 0.1705145111116574, "value_per_transaction_2022": null, "value_per_txn_pct_diff": null}, {"address_label": "No Label", "total_transactions_2021": 33066.0, "total_transactions_2022": 8829.0, "total_value_eth_2021": 1888.5941294435654, "total_value_eth_2022": 2042.9934579588828, "total_transactions_pct_diff": -0.7329885683179096, "total_value_eth_pct_diff": 0.08175357855253318, "value_per_transaction_2021": 0.05711589334795758, "value_per_transaction_2022": 0.2313957931769037, "value_per_txn_pct_diff": 3.0513380709500577}, {"address_label": "Spark Pool: Distributor", "total_transactions_2021": 7588.0, "total_transactions_2022": 0.0, "total_value_eth_2021": 3219.760188046487, "total_value_eth_2022": 0.0, "total_transactions_pct_diff": -1.0, "total_value_eth_pct_diff": -1.0, "value_per_transaction_2021": 0.4243226394368064, "value_per_transaction_2022": null, "value_per_txn_pct_diff": null}]}}, {"mode": "vega-lite"});
+</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="What-does-the-above-chart-tell-us?">
+<a class="anchor" href="#What-does-the-above-chart-tell-us?" aria-hidden="true"><span class="octicon octicon-link"></span></a>What does the above chart tell us?<a class="anchor-link" href="#What-does-the-above-chart-tell-us?"> </a>
+</h3>
+<ul>
+<li>(Hover on the grey tick mark for F2Pool Old). We can see that there is almost a 46% <strong>increase</strong> in the number of ETH transacted on 6 July 2022 for F2Pool Old, despite 42% <strong>decline</strong> in actual number of transactions.</li>
+<li>This meant that there was more ETH per transaction on 6 July 2022 and could be due to the lower price of ETH.</li>
+<li>The closing price of ETH on 6 July 2021 was about USD\$2,323 (AUD\\$3,097) and on 6 July 2022 was about USD\$1,186 (AUD$1,744). See historical prices from <a href="https://messari.io/asset/ethereum/historical">Messari</a>.</li>
+<li>So, an equivalent of USD\$2.9 mil (AUD\\$3.9 mil) was transacted on 6 July 2021 and USD\$2.1 mil (AUD\\$3.2 mil) on 6 July 2022 by F2Pool Old.</li>
+</ul>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df_overall_agg</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">'block_date.isin(["2021-07-06","2022-07-06"])'</span><span class="p">)</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">'block_date'</span><span class="p">])</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">total_transactions</span><span class="o">=</span><span class="p">(</span><span class="s1">'hash'</span><span class="p">,</span><span class="s1">'count'</span><span class="p">),</span><span class="n">total_value_eth</span><span class="o">=</span><span class="p">(</span><span class="s1">'eth_value'</span><span class="p">,</span><span class="s1">'sum'</span><span class="p">))</span>
+<span class="n">df_overall_agg</span><span class="p">[</span><span class="s1">'eth_per_transaction'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_overall_agg</span><span class="p">[</span><span class="s1">'total_value_eth'</span><span class="p">]</span><span class="o">/</span><span class="n">df_overall_agg</span><span class="p">[</span><span class="s1">'total_transactions'</span><span class="p">]</span>
+<span class="n">df_overall_agg</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">'block_date'</span><span class="p">])</span><span class="o">.</span><span class="n">agg</span><span class="p">({</span><span class="s1">'total_transactions'</span><span class="p">:</span><span class="s1">'sum'</span><span class="p">,</span> <span class="s1">'total_value_eth'</span><span class="p">:</span><span class="s1">'sum'</span><span class="p">,</span> <span class="s1">'eth_per_transaction'</span><span class="p">:</span><span class="s1">'sum'</span><span class="p">})</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>total_transactions</th>
+      <th>total_value_eth</th>
+      <th>eth_per_transaction</th>
+    </tr>
+    <tr>
+      <th>block_date</th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2021-07-06</th>
+      <td>1355421</td>
+      <td>2024807.8928</td>
+      <td>1.4939</td>
+    </tr>
+    <tr>
+      <th>2022-07-06</th>
+      <td>1161432</td>
+      <td>1882904.6394</td>
+      <td>1.6212</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="What-does-the-above-table-mean?">
+<a class="anchor" href="#What-does-the-above-table-mean?" aria-hidden="true"><span class="octicon octicon-link"></span></a>What does the above table mean?<a class="anchor-link" href="#What-does-the-above-table-mean?"> </a>
+</h3>
+<ul>
+<li>From above table, we can see that eventhough there is a 14% <strong>drop</strong> in number of transactions on 6 July 2022 vs 6 July 2021, there is an <strong>increase</strong> of almost 9% in ETH per transaction. As mentioned, this could be due to the lower price of ETH on 6 July 2022.</li>
+<li>If we examine a longer period, see the <em>"ETH Per Transaction 2022 vs 2021 Last 3 Months"</em> chart in this <a href="https://dune.com/interuniverse/ethereum-transactions-overview">Dune</a> dashboard.<ul>
+<li>On 13 June 2022, ETH per transaction was almost 7 compared to 13 July 2021, which was at 1.</li>
+<li>The price of ETH on 13 June 2022, was even lower, at USD\$1,208 (AUD\\$1,726) while on 13 June 2021, was at USD\$2,509 (AUD\\$3,258).</li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+</div>
+</div>
+
+
+
+  </div><!-- from https://github.com/utterance/utterances -->
+<script src="https://utteranc.es/client.js"
+        repo="InterUniverse/scratching-the-surface"
+        issue-term="title"
+        label="blogpost-comment"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script><a class="u-url" href="/scratching-the-surface/fastpages/jupyter/2022/08/22/ethereum-txn-eda.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/scratching-the-surface/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/scratching-the-surface/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/scratching-the-surface/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <p></p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
