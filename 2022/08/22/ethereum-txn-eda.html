@@ -11,8 +11,8 @@
 <meta property="og:locale" content="en_US" />
 <meta name="description" content="My first attempt at analyzing Ethereum transactions. Only scratching the surface!" />
 <meta property="og:description" content="My first attempt at analyzing Ethereum transactions. Only scratching the surface!" />
-<link rel="canonical" href="https://interuniverse.github.io/scratching-the-surface/fastpages/jupyter/2022/08/22/ethereum-txn-eda.html" />
-<meta property="og:url" content="https://interuniverse.github.io/scratching-the-surface/fastpages/jupyter/2022/08/22/ethereum-txn-eda.html" />
+<link rel="canonical" href="https://interuniverse.github.io/scratching-the-surface/2022/08/22/ethereum-txn-eda.html" />
+<meta property="og:url" content="https://interuniverse.github.io/scratching-the-surface/2022/08/22/ethereum-txn-eda.html" />
 <meta property="og:site_name" content="Scratching The Surface" />
 <meta property="og:image" content="https://interuniverse.github.io/scratching-the-surface/images/ethereum-txn-eda.png" />
 <meta property="og:type" content="article" />
@@ -21,7 +21,7 @@
 <meta property="twitter:image" content="https://interuniverse.github.io/scratching-the-surface/images/ethereum-txn-eda.png" />
 <meta property="twitter:title" content="Ethereum Transactions Exploratory Data Analysis" />
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Corey"},"dateModified":"2022-08-22T00:00:00-05:00","datePublished":"2022-08-22T00:00:00-05:00","description":"My first attempt at analyzing Ethereum transactions. Only scratching the surface!","headline":"Ethereum Transactions Exploratory Data Analysis","image":"https://interuniverse.github.io/scratching-the-surface/images/ethereum-txn-eda.png","mainEntityOfPage":{"@type":"WebPage","@id":"https://interuniverse.github.io/scratching-the-surface/fastpages/jupyter/2022/08/22/ethereum-txn-eda.html"},"url":"https://interuniverse.github.io/scratching-the-surface/fastpages/jupyter/2022/08/22/ethereum-txn-eda.html"}</script>
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Corey"},"dateModified":"2022-08-22T00:00:00-05:00","datePublished":"2022-08-22T00:00:00-05:00","description":"My first attempt at analyzing Ethereum transactions. Only scratching the surface!","headline":"Ethereum Transactions Exploratory Data Analysis","image":"https://interuniverse.github.io/scratching-the-surface/images/ethereum-txn-eda.png","mainEntityOfPage":{"@type":"WebPage","@id":"https://interuniverse.github.io/scratching-the-surface/2022/08/22/ethereum-txn-eda.html"},"url":"https://interuniverse.github.io/scratching-the-surface/2022/08/22/ethereum-txn-eda.html"}</script>
 <!-- End Jekyll SEO tag -->
 <link rel="stylesheet" href="/scratching-the-surface/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://interuniverse.github.io/scratching-the-surface/feed.xml" title="Scratching The Surface" /><link rel="shortcut icon" type="image/x-icon" href="/scratching-the-surface/images/favicon.ico"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/15.2.0/primer.css" integrity="sha512-xTz2ys4coGAOz8vuV1NcQBkgVmKhsSEtjbqyMJbBHRplFuvKIUo6xhLHpAyPt9mfR6twHJgn9OgVLuqOvjeBhg==" crossorigin="anonymous" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
@@ -89,16 +89,6 @@ window.onload = wrap_img;
 </span></p>
 
     
-      <p class="category-tags"><i class="fas fa-tags category-tags-icon"></i></i> 
-      
-        <a class="category-tags-link" href="/scratching-the-surface/categories/#fastpages">fastpages</a>
-        &nbsp;
-      
-        <a class="category-tags-link" href="/scratching-the-surface/categories/#jupyter">jupyter</a>
-        
-      
-      </p>
-    
 
     
       
@@ -122,22 +112,14 @@ window.onload = wrap_img;
 
   <div class="post-content e-content" itemprop="articleBody">
     <ul id="toc" class="section-nav">
-<li class="toc-entry toc-h2"><a href="#Findings:">Findings: </a></li>
-<li class="toc-entry toc-h2"><a href="#Next-steps:">Next steps: </a></li>
+<li class="toc-entry toc-h2"><a href="#Findings">Findings </a></li>
+<li class="toc-entry toc-h2"><a href="#Next-steps">Next steps </a></li>
 <li class="toc-entry toc-h2"><a href="#Chart-2:-Ethereum-Year-Over-Year-Transactions">Chart 2: Ethereum Year-Over-Year Transactions </a></li>
 <li class="toc-entry toc-h2"><a href="#Chart-4:-Year-Over-Year-(6-July-2022-vs-6-July-2021)-by-Address-Names">Chart 4: Year-Over-Year (6 July 2022 vs 6 July 2021) by Address Names </a></li>
 <li class="toc-entry toc-h2"><a href="#Table:-Total-transactions,-value-in-ETH-and-ETH-per-transaction">Table: Total transactions, value in ETH and ETH per transaction </a></li>
 <li class="toc-entry toc-h2"><a href="#The-details-(for-the-technically-minded)">The details (for the technically minded) </a></li>
-<li class="toc-entry toc-h2"><a href="#Read-the-data-files">Read the data files </a>
-<ul>
-<li class="toc-entry toc-h3"><a href="#Format-data-types-and-add-new-column">Format data types and add new column </a></li>
-</ul>
-</li>
-<li class="toc-entry toc-h2"><a href="#Inspect-dataset-1:-Ethereum-transactions">Inspect dataset 1: Ethereum transactions </a>
-<ul>
-<li class="toc-entry toc-h3"><a href="#Data-fields">Data fields </a></li>
-</ul>
-</li>
+<li class="toc-entry toc-h2"><a href="#Read-the-data-files">Read the data files </a></li>
+<li class="toc-entry toc-h2"><a href="#Inspect-dataset-1:-Ethereum-transactions">Inspect dataset 1: Ethereum transactions </a></li>
 <li class="toc-entry toc-h2"><a href="#Analysis:-Year-Over-Year-(YOY)-transactions-1-to-7-July-2021-vs-1-to-7-July-2022">Analysis: Year-Over-Year (YOY) transactions 1 to 7 July 2021 vs 1 to 7 July 2022 </a>
 <ul>
 <li class="toc-entry toc-h3"><a href="#Creating-chart-1:-Number-of-Ethereum-transactions">Creating chart 1: Number of Ethereum transactions </a></li>
@@ -163,19 +145,19 @@ window.onload = wrap_img;
 <div class="cell border-box-sizing text_cell rendered">
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Findings:">
-<a class="anchor" href="#Findings:" aria-hidden="true"><span class="octicon octicon-link"></span></a>Findings:<a class="anchor-link" href="#Findings:"> </a>
+<h2 id="Findings">
+<a class="anchor" href="#Findings" aria-hidden="true"><span class="octicon octicon-link"></span></a>Findings<a class="anchor-link" href="#Findings"> </a>
 </h2>
 <ul>
 <li>
-<p>Looking at the number of Ethereum transactions from 1 to 7 July 2022, there was a <strong>14% drop</strong> on 6 July 2022 compared to 6 July 2021,<strong>Year-Over-Year</strong>. (See <a href="#-Chart-2-:-Ethereum-Year-Over-Year-Transactions">chart 2</a>).</p>
+<p>Looking at the number of Ethereum transactions from 1 to 7 July 2022, there was a <strong>14% drop</strong> on 6 July 2022 compared to 6 July 2021,<strong>Year-Over-Year</strong>. (See <a href="https://interuniverse.github.io/scratching-the-surface/fastpages/jupyter/2022/08/22/ethereum-txn-eda.html#Chart-2:-Ethereum-Year-Over-Year-Transactions">chart 2</a>).</p>
 </li>
 <li>
-<p>Focussing on 6 July 2022, of the top 50 addresses with the most transactions, we can see 3 categories of addresses: <strong>miners</strong>, <strong>crypto exchanges</strong> and <strong>no label</strong> (See <a href="">chart 4</a>).<br>
+<p>Focussing on 6 July 2022, of the top 50 addresses with the most transactions, we can see 3 categories of addresses: <strong>miners</strong>, <strong>crypto exchanges</strong> and <strong>no label</strong> (See <a href="https://interuniverse.github.io/scratching-the-surface/fastpages/jupyter/2022/08/22/ethereum-txn-eda.html#Chart-4:-Year-Over-Year-(6-July-2022-vs-6-July-2021">chart 4</a>-by-Address-Names)).<br>
 "No label" are user(s) or organization(s) where based on their addresses, the name/label unidentified in <a href="https://etherscan.io/">etherscan</a>.</p>
 </li>
 <li>
-<p>Although there was a <strong>14% drop</strong> in number of transactions on 6 July 2022, there was an <strong>increase</strong> of almost 9% in the number of ETH per transaction. (See <a href="">table</a>)<br>
+<p>Although there was a <strong>14% drop</strong> in number of transactions on 6 July 2022, there was an <strong>increase</strong> of almost 9% in the number of ETH per transaction. (See <a href="https://interuniverse.github.io/scratching-the-surface/fastpages/jupyter/2022/08/22/ethereum-txn-eda.html#Table:-Total-transactions,-value-in-ETH-and-ETH-per-transaction">table</a>)<br>
 ETH is the crypto currency used for payment on the Ethereum network. <a href="https://ethereum.org/en/developers/docs/intro-to-ether/#what-is-ether">More explanation</a>.</p>
 <ul>
 <li>
@@ -200,8 +182,8 @@ The closing price of ETH on 13 June 2022, was at <strong>USD\$1,208 (AUD\\$1,726
 <div class="cell border-box-sizing text_cell rendered">
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Next-steps:">
-<a class="anchor" href="#Next-steps:" aria-hidden="true"><span class="octicon octicon-link"></span></a>Next steps:<a class="anchor-link" href="#Next-steps:"> </a>
+<h2 id="Next-steps">
+<a class="anchor" href="#Next-steps" aria-hidden="true"><span class="octicon octicon-link"></span></a>Next steps<a class="anchor-link" href="#Next-steps"> </a>
 </h2>
 <ul>
 <li>
@@ -634,9 +616,8 @@ The closing price of ETH on 13 June 2022, was at <strong>USD\$1,208 (AUD\\$1,726
 <div class="cell border-box-sizing text_cell rendered">
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Format-data-types-and-add-new-column">
-<a class="anchor" href="#Format-data-types-and-add-new-column" aria-hidden="true"><span class="octicon octicon-link"></span></a>Format data types and add new column<a class="anchor-link" href="#Format-data-types-and-add-new-column"> </a>
-</h3>
+<p>Format data types and add new column</p>
+
 </div>
 </div>
 </div>
@@ -898,9 +879,7 @@ memory usage: 1.3+ GB
 <div class="cell border-box-sizing text_cell rendered">
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Data-fields">
-<a class="anchor" href="#Data-fields" aria-hidden="true"><span class="octicon octicon-link"></span></a>Data fields<a class="anchor-link" href="#Data-fields"> </a>
-</h3>
+<p>Data fields</p>
 <ul>
 <li>
 <code>hash</code> - Hash of the transaction</li>
@@ -2650,7 +2629,7 @@ dtype: int64</pre>
         theme="github-light"
         crossorigin="anonymous"
         async>
-</script><a class="u-url" href="/scratching-the-surface/fastpages/jupyter/2022/08/22/ethereum-txn-eda.html" hidden></a>
+</script><a class="u-url" href="/scratching-the-surface/2022/08/22/ethereum-txn-eda.html" hidden></a>
 </article>
 
       </div>
