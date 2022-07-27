@@ -5,7 +5,7 @@ permalink: /about/
 ---
 
 Hi, my name is Corey and I am a data analytics professional.  
-I am passionate about solving valuable problems with data analysis and machine/deep learning.  
+I am passionate about making an impact through solving valuable problems with data analysis and machine/deep learning.  
 You can contact me via [linkedin](https://www.linkedin.com/in/coreyhkk/).
 
 ---
